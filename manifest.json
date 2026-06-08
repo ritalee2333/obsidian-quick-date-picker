@@ -1,0 +1,9 @@
+{
+	"id": "at-date-picker",
+	"name": "At-Date Picker",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Quickly summon a mini calendar by typing @ (or your custom trigger) in documents to pick dates and choose output formats on the fly. Also supports relative date shortcuts like @+3d.",
+	"author": "LDD",
+	"isDesktopOnly": false
+}

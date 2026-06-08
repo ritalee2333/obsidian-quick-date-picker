@@ -1,0 +1,349 @@
+/* ───────────────────────────────────────────────
+   At-Date Picker — Calendar Popup Styles
+   Uses Obsidian CSS variables for theme compatibility
+   ─────────────────────────────────────────────── */
+
+.at-date-popup {
+	--atd-popup-width: 260px;
+	--atd-popup-padding: 12px;
+	--atd-cell-size: 32px;
+	--atd-cell-gap: 2px;
+	--atd-border-radius: 6px;
+	--atd-button-radius: 12px;
+	--atd-preview-margin-top: 8px;
+	--atd-format-margin-top: 8px;
+	--atd-nav-height: 28px;
+
+	position: absolute;
+	z-index: 1000;
+	display: flex;
+	gap: 12px;
+	width: auto;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--atd-border-radius);
+	padding: var(--atd-popup-padding);
+	font-family: var(--font-interface);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.at-date-calendar-section {
+	width: var(--atd-popup-width);
+	flex-shrink: 0;
+}
+
+.at-date-controls-section {
+	display: flex;
+	flex-direction: column;
+	min-width: 120px;
+	max-width: 160px;
+	flex-shrink: 0;
+	padding-left: 12px;
+	border-left: 1px solid var(--background-modifier-border);
+}
+
+/* Navigation Header */
+.at-date-nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: var(--atd-nav-height);
+	margin-bottom: 8px;
+}
+
+.at-date-nav-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--text-normal);
+}
+
+.at-date-nav-btn {
+	background: transparent;
+	border: none;
+	color: var(--text-muted);
+	font-size: 14px;
+	cursor: pointer;
+	padding: 4px 8px;
+	border-radius: 4px;
+	min-width: 28px;
+	min-height: 28px;
+}
+
+.at-date-nav-btn:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+/* Weekday Headers */
+.at-date-weekdays {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: var(--atd-cell-gap);
+	margin-bottom: 4px;
+}
+
+.at-date-weekday {
+	text-align: center;
+	font-size: 11px;
+	color: var(--text-muted);
+	line-height: var(--atd-cell-size);
+}
+
+/* Calendar Grid */
+.at-date-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: var(--atd-cell-gap);
+}
+
+.at-date-cell {
+	width: var(--atd-cell-size);
+	height: var(--atd-cell-size);
+	background: transparent;
+	border: none;
+	border-radius: 4px;
+	color: var(--text-normal);
+	font-size: 13px;
+	cursor: pointer;
+	transition: background-color 120ms ease, transform 200ms ease-out;
+	text-align: center;
+	line-height: var(--atd-cell-size);
+	padding: 0;
+}
+
+.at-date-cell:hover {
+	background: var(--background-modifier-hover);
+}
+
+.at-date-cell.is-today {
+	font-weight: bold;
+	border-bottom: 2px solid var(--interactive-accent);
+}
+
+.at-date-cell.is-selected {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	transform: scale(1);
+}
+
+.at-date-cell.is-selected:hover {
+	background: var(--interactive-accent);
+}
+
+.at-date-cell.is-other-month {
+	opacity: 0.3;
+}
+
+.at-date-cell.is-other-month:hover {
+	opacity: 1;
+}
+
+/* Preview Area */
+.at-date-preview {
+	height: var(--atd-nav-height);
+	margin-bottom: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 13px;
+	color: var(--interactive-accent);
+	font-weight: 600;
+	text-align: center;
+	white-space: normal;
+	word-break: break-all;
+}
+
+.at-date-preview.is-invalid {
+	color: var(--text-error);
+}
+
+/* Format Buttons */
+.at-date-formats {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 6px;
+}
+
+.at-date-format-btn {
+	background: transparent;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--atd-button-radius);
+	color: var(--text-normal);
+	font-size: 12px;
+	padding: 4px 10px;
+	cursor: pointer;
+	transition: background-color 150ms ease, border-color 150ms ease;
+	width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	min-height: 28px;
+}
+
+.at-date-format-btn:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.at-date-format-btn.is-selected {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.at-date-format-empty {
+	font-size: 12px;
+	color: var(--text-muted);
+}
+
+.at-date-format-settings-link {
+	color: var(--interactive-accent);
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+/* Confirm Button */
+.at-date-confirm-area {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	margin-top: auto;
+}
+
+.at-date-confirm-btn {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: var(--atd-button-radius);
+	font-size: 13px;
+	padding: 5px 16px;
+	cursor: pointer;
+	transition: opacity 150ms ease;
+}
+
+.at-date-confirm-btn:hover {
+	opacity: 0.85;
+}
+
+.at-date-confirm-hint {
+	font-size: 11px;
+	color: var(--text-muted);
+}
+
+/* Settings Panel */
+.atd-format-preview {
+	padding: 8px 0;
+	font-size: 13px;
+	color: var(--text-muted);
+}
+
+.atd-format-preview-value {
+	color: var(--text-normal);
+	font-family: var(--font-monospace);
+}
+
+.atd-format-preview-value.is-invalid {
+	color: var(--text-error);
+}
+
+.atd-format-list {
+	margin: 12px 0;
+}
+
+.atd-format-item {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--atd-border-radius);
+	padding: 8px;
+	margin-bottom: 8px;
+}
+
+.atd-format-item-header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+.atd-format-item-name {
+	font-weight: 600;
+	flex: 1;
+	color: var(--text-normal);
+}
+
+.atd-format-item-btn {
+	background: transparent;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	color: var(--text-muted);
+	font-size: 11px;
+	padding: 2px 6px;
+	cursor: pointer;
+}
+
+.atd-format-item-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.atd-format-item-delete:hover {
+	color: var(--text-error);
+	border-color: var(--text-error);
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+	.at-date-popup {
+		flex-direction: column;
+		width: calc(100vw - 16px);
+		left: 8px !important;
+	}
+
+	.at-date-calendar-section,
+	.at-date-controls-section {
+		width: 100%;
+		max-width: none;
+	}
+
+	.at-date-controls-section {
+		padding-left: 0;
+		border-left: none;
+		padding-top: 8px;
+		border-top: 1px solid var(--background-modifier-border);
+	}
+
+	.at-date-preview {
+		margin-top: var(--atd-preview-margin-top);
+		padding-top: var(--atd-preview-margin-top);
+		border-top: 1px solid var(--background-modifier-border);
+	}
+
+	.at-date-formats {
+		flex-direction: row;
+		flex-wrap: wrap;
+		margin-top: var(--atd-format-margin-top);
+		padding-top: var(--atd-format-margin-top);
+		border-top: 1px solid var(--background-modifier-border);
+	}
+
+	.at-date-format-btn {
+		width: auto;
+		max-width: 80px;
+	}
+
+	.at-date-confirm-area {
+		flex-direction: row;
+		gap: 8px;
+		margin-top: var(--atd-format-margin-top);
+		padding-top: var(--atd-format-margin-top);
+		border-top: 1px solid var(--background-modifier-border);
+	}
+}
+
+@media (max-height: 500px) {
+	.at-date-popup {
+		max-height: 80vh;
+		overflow-y: auto;
+	}
+}

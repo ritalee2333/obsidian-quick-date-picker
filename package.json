@@ -1,0 +1,33 @@
+{
+	"name": "at-date-picker",
+	"version": "1.0.0",
+	"description": "Quickly summon a mini calendar by typing @ in Obsidian documents to pick dates and choose output formats on the fly.",
+	"main": "main.js",
+	"type": "module",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"version": "node version-bump.mjs && git add manifest.json versions.json"
+	},
+	"keywords": [
+		"obsidian",
+		"plugin",
+		"date",
+		"calendar",
+		"picker"
+	],
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"esbuild": "0.25.5",
+		"jsdom": "^24.0.0",
+		"tslib": "2.4.0",
+		"typescript": "^5.8.3",
+		"vitest": "^1.6.0"
+	},
+	"dependencies": {
+		"obsidian": "latest"
+	}
+}
