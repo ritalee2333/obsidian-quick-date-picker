@@ -13,6 +13,20 @@
 - **标题栏支持**：在笔记标题（文件名）中同样可以使用日期选择器
 - **多语言界面**：设置页和日历弹窗根据 Obsidian 界面语言自动切换中英文
 
+## 演示
+
+### 日历弹窗
+
+![日历弹窗](docs/images/demo-calendar-popup.gif)
+
+### 相对日期快捷输入
+
+![相对日期](docs/images/demo-relative-date.gif)
+
+### 设置页面
+
+![设置页面](docs/images/demo-settings-panel.gif)
+
 ## 安装
 
 ### 从 Obsidian 社区插件市场安装（推荐）

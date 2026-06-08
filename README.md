@@ -13,6 +13,20 @@ Quickly insert dates in Obsidian by typing `@` (or your custom trigger character
 - **Title Bar Support**: Use the date picker in note titles (file names) as well.
 - **Multi-language UI**: Setting panel and calendar popup automatically adapt to Obsidian's interface language (Chinese / English).
 
+## Demo
+
+### Calendar Popup
+
+![Calendar Popup](docs/images/demo-calendar-popup.gif)
+
+### Relative Date Shortcuts
+
+![Relative Date](docs/images/demo-relative-date.gif)
+
+### Settings Panel
+
+![Settings Panel](docs/images/demo-settings-panel.gif)
+
 ## Installation
 
 ### From Obsidian Community Plugin Marketplace (Recommended)
