@@ -14,7 +14,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		containerEl.createEl("h2", { text: "At-Date Picker 设置" });
+		containerEl.createEl("h2", { text: "Quick Date Picker 设置" });
 
 		// Trigger character
 		new Setting(containerEl)

@@ -1,4 +1,4 @@
-# At-Date Picker
+# Quick Date Picker
 
 [English](README.md) | [中文](README.zh.md)
 
@@ -19,13 +19,13 @@ Quickly insert dates in Obsidian by typing `@` (or your custom trigger character
 
 1. Open Obsidian, go to **Settings → Community Plugins**
 2. Turn off Safe Mode if it is still on
-3. Click **Browse**, search for "At-Date Picker"
+3. Click **Browse**, search for "Quick Date Picker"
 4. Click Install, then Enable
 
 ### Manual Installation
 
-1. Download the latest `main.js`, `manifest.json`, and `styles.css` from [Releases](https://github.com/ritalee2333/obsidian-at-date-picker/releases)
-2. Place the files into your vault's `.obsidian/plugins/at-date-picker/` directory
+1. Download the latest `main.js`, `manifest.json`, and `styles.css` from [Releases](https://github.com/ritalee2333/obsidian-quick-date-picker/releases)
+2. Place the files into your vault's `.obsidian/plugins/quick-date-picker/` directory
 3. Restart Obsidian and enable the plugin in Settings
 
 ## Usage
@@ -58,7 +58,7 @@ Unit reference: `d`=day, `w`=week, `m`=month, `y`=year. `+` can be omitted.
 
 ## Settings
 
-Go to **Settings → Community Plugins → At-Date Picker** to configure:
+Go to **Settings → Community Plugins → Quick Date Picker** to configure:
 
 - **Trigger Character**: Customize the character that summons the calendar (default `@`)
 - **Remember Last Format**: When enabled, the popup auto-selects the format you last used
@@ -104,7 +104,7 @@ npm test
 
 ## Support
 
-If you encounter any issues or have feature suggestions, please open an issue on [GitHub Issues](https://github.com/ritalee2333/obsidian-at-date-picker/issues).
+If you encounter any issues or have feature suggestions, please open an issue on [GitHub Issues](https://github.com/ritalee2333/obsidian-quick-date-picker/issues).
 
 ## License
 

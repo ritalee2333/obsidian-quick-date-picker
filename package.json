@@ -1,5 +1,5 @@
 {
-	"name": "at-date-picker",
+	"name": "quick-date-picker",
 	"version": "1.0.0",
 	"description": "Quickly summon a mini calendar by typing @ in Obsidian documents to pick dates and choose output formats on the fly.",
 	"main": "main.js",

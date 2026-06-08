@@ -1,4 +1,4 @@
-# At-Date Picker
+# Quick Date Picker
 
 [English](README.md) | [中文](README.zh.md)
 
@@ -19,13 +19,13 @@
 
 1. 打开 Obsidian，进入 **设置 → 社区插件**
 2. 关闭安全模式（如果尚未关闭）
-3. 点击 **浏览**，搜索 "At-Date Picker"
+3. 点击 **浏览**，搜索 "Quick Date Picker"
 4. 点击安装并启用
 
 ### 手动安装
 
-1. 从 [Releases](https://github.com/ritalee2333/obsidian-at-date-picker/releases) 下载最新版本的 `main.js`、`manifest.json` 和 `styles.css`
-2. 将文件放入你的 Obsidian 仓库的 `.obsidian/plugins/at-date-picker/` 目录
+1. 从 [Releases](https://github.com/ritalee2333/obsidian-quick-date-picker/releases) 下载最新版本的 `main.js`、`manifest.json` 和 `styles.css`
+2. 将文件放入你的 Obsidian 仓库的 `.obsidian/plugins/quick-date-picker/` 目录
 3. 重启 Obsidian，在设置中启用插件
 
 ## 使用方法
@@ -58,7 +58,7 @@
 
 ## 设置
 
-进入 **设置 → 社区插件 → At-Date Picker** 进行配置：
+进入 **设置 → 社区插件 → Quick Date Picker** 进行配置：
 
 - **触发字符**：自定义呼出日历的字符（默认 `@`）
 - **记住上次使用的格式**：开启后下次弹窗自动选中上次使用的格式
@@ -104,7 +104,7 @@ npm test
 
 ## 支持
 
-如果你遇到任何问题或有功能建议，请在 [GitHub Issues](https://github.com/ritalee2333/obsidian-at-date-picker/issues) 中提出。
+如果你遇到任何问题或有功能建议，请在 [GitHub Issues](https://github.com/ritalee2333/obsidian-quick-date-picker/issues) 中提出。
 
 ## 许可证
 

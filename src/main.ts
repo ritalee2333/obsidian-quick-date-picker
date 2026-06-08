@@ -38,7 +38,7 @@ export default class AtDatePickerPlugin extends Plugin {
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
 			new Notice(`保存设置失败: ${msg}`);
-			console.error("[At-Date Picker] saveSettings failed:", err);
+			console.error("[Quick Date Picker] saveSettings failed:", err);
 		}
 	}
 
