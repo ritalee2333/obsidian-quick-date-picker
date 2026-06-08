@@ -11,7 +11,7 @@ Quickly insert dates in Obsidian by typing `@` (or your custom trigger character
 - **Multiple Output Formats**: Built-in formats (Standard, Wiki Link, Chinese, Compact, etc.) with customizable prefix/suffix.
 - **Instant Format Switching**: Frequently-used format buttons appear at the bottom of the mini calendar popup, allowing quick format switching without opening Settings.
 - **Title Bar Support**: Use the date picker in note titles (file names) as well.
-- **Highly Customizable**: Custom trigger character, format templates, and option to remember last-used format.
+- **Multi-language UI**: Setting panel and calendar popup automatically adapt to Obsidian's interface language (Chinese / English).
 
 ## Installation
 
@@ -73,6 +73,8 @@ Supported date tokens:
 |-------|-------------|---------|
 | `YYYY` | Four-digit year | 2026 |
 | `YY`   | Two-digit year | 26 |
+| `MMMM` | Full month name (English) | June |
+| `MMM`  | Short month name (English) | Jun |
 | `MM`   | Two-digit month | 05 |
 | `M`    | One-digit month | 5 |
 | `DD`   | Two-digit day | 23 |

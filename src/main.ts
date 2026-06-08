@@ -5,6 +5,7 @@ import { AtDateEditorSuggest } from "./suggest";
 import { CalendarPopup } from "./calendar-popup";
 import { formatDate } from "./format-engine";
 import { isRelativeDateInput, parseRelativeDate } from "./relative-date";
+import { tf, detectAndSetLocale } from "./i18n";
 
 export default class AtDatePickerPlugin extends Plugin {
 	settings: AtDatePickerSettings;
@@ -12,6 +13,7 @@ export default class AtDatePickerPlugin extends Plugin {
 	private isDispatchingTitleInput = false;
 
 	async onload() {
+		detectAndSetLocale();
 		await this.loadSettings();
 		this.addSettingTab(new AtDateSettingTab(this.app, this));
 		this.suggest = new AtDateEditorSuggest(this.app, this);
@@ -37,7 +39,7 @@ export default class AtDatePickerPlugin extends Plugin {
 			await this.saveData(this.settings);
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
-			new Notice(`保存设置失败: ${msg}`);
+			new Notice(tf("saveSettingsFailed", msg));
 			console.error("[Quick Date Picker] saveSettings failed:", err);
 		}
 	}

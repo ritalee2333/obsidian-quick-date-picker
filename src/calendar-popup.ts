@@ -1,6 +1,7 @@
 import { FormatTemplate } from "./types";
 import { formatDate } from "./format-engine";
 import AtDatePickerPlugin from "./main";
+import { t, tf } from "./i18n";
 
 interface Coords {
 	top: number;
@@ -149,7 +150,7 @@ export class CalendarPopup {
 
 		// Weekday headers
 		const weekdayRow = calendarSection.createDiv({ cls: "at-date-weekdays" });
-		const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+		const weekdays = t("weekdays").split("");
 		for (const day of weekdays) {
 			weekdayRow.createEl("span", { text: day, cls: "at-date-weekday" });
 		}
@@ -179,11 +180,11 @@ export class CalendarPopup {
 		const formats = this.plugin.settings.favoriteFormats.slice(0, 4);
 		if (formats.length === 0) {
 			const emptyMsg = formatArea.createEl("span", {
-				text: "暂无常用格式（最多显示4个） ",
+				text: t("noFavoriteFormats"),
 				cls: "at-date-format-empty",
 			});
 			const settingsLink = emptyMsg.createEl("a", {
-				text: "去设置",
+				text: t("goToSettings"),
 				cls: "at-date-format-settings-link",
 			});
 			settingsLink.addEventListener("click", () => {
@@ -212,12 +213,12 @@ export class CalendarPopup {
 		// Confirm button area
 		const confirmArea = controlsSection.createDiv({ cls: "at-date-confirm-area" });
 		const confirmBtn = confirmArea.createEl("button", {
-			text: "确定",
+			text: t("confirm"),
 			cls: "at-date-confirm-btn",
 			attr: { tabindex: "-1" },
 		});
 		confirmArea.createEl("span", {
-			text: "或按 Enter",
+			text: t("orPressEnter"),
 			cls: "at-date-confirm-hint",
 		});
 		confirmBtn.addEventListener("click", () => {
@@ -233,7 +234,7 @@ export class CalendarPopup {
 
 		const navTitle = this.containerEl.querySelector(".at-date-nav-title");
 		if (navTitle) {
-			navTitle.textContent = `${year}年${month + 1}月`;
+			navTitle.textContent = tf("navTitle", year, month + 1);
 		}
 
 		const firstDay = new Date(year, month, 1);
@@ -290,7 +291,7 @@ export class CalendarPopup {
 	private updatePreview(): void {
 		if (!this.previewEl) return;
 		const text = formatDate(this.selectedDate, this.selectedFormat);
-		this.previewEl.textContent = `预览: ${text}`;
+		this.previewEl.textContent = tf("previewLabel", text);
 	}
 
 	private changeMonth(delta: number): void {

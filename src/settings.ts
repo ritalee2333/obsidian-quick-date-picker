@@ -1,7 +1,20 @@
-import { App, PluginSettingTab, Setting, Notice } from "obsidian";
+import { App, PluginSettingTab, Setting, Notice, TextComponent } from "obsidian";
 import AtDatePickerPlugin from "./main";
 import { FormatTemplate, DEFAULT_SETTINGS } from "./types";
 import { validateTemplate, formatDate } from "./format-engine";
+import { t, tf } from "./i18n";
+
+const RECOMMENDED_FORMATS = [
+	"YYYY-MM-DD",
+	"YYYY/MM/DD",
+	"YYYY.MM.DD",
+	"YYYY年MM月DD日",
+	"YYMMDD",
+	"MM/DD/YYYY",
+	"DD/MM/YYYY",
+	"MMM D, YYYY",
+	"MMMM D, YYYY",
+];
 
 export class AtDateSettingTab extends PluginSettingTab {
 	plugin: AtDatePickerPlugin;
@@ -14,18 +27,18 @@ export class AtDateSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		containerEl.createEl("h2", { text: "Quick Date Picker 设置" });
+		containerEl.createEl("h2", { text: t("settingTitle") });
 
 		// Trigger character
 		new Setting(containerEl)
-			.setName("触发字符")
-			.setDesc("输入此字符后弹出日期选择器（重启 Obsidian 后生效）")
+			.setName(t("triggerChar"))
+			.setDesc(t("triggerCharDesc"))
 			.addText((text) =>
 				text
 					.setValue(this.plugin.settings.triggerChar)
 					.onChange(async (value) => {
 						if (!value || value.length === 0) {
-							new Notice("触发字符不能为空");
+							new Notice(t("triggerCharEmpty"));
 							return;
 						}
 						this.plugin.settings.triggerChar = value;
@@ -35,8 +48,8 @@ export class AtDateSettingTab extends PluginSettingTab {
 
 		// Remember last format
 		new Setting(containerEl)
-			.setName("记住上次使用的格式")
-			.setDesc("开启后，弹窗会自动选中你上次使用的格式")
+			.setName(t("rememberLastFormat"))
+			.setDesc(t("rememberLastFormatDesc"))
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.rememberLastFormat)
@@ -46,10 +59,10 @@ export class AtDateSettingTab extends PluginSettingTab {
 					})
 			);
 
-		containerEl.createEl("h3", { text: "默认格式", cls: "setting-item-heading" });
+		containerEl.createEl("h3", { text: t("defaultFormat"), cls: "setting-item-heading" });
 		this.renderFormatEditor(containerEl, this.plugin.settings.defaultFormat, true);
 
-		containerEl.createEl("h3", { text: "常用格式列表", cls: "setting-item-heading" });
+		containerEl.createEl("h3", { text: t("favoriteFormats"), cls: "setting-item-heading" });
 		const formatListContainer = containerEl.createDiv({ cls: "atd-format-list" });
 		this.renderFormatList(formatListContainer);
 
@@ -57,10 +70,10 @@ export class AtDateSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.addButton((btn) =>
 				btn
-					.setButtonText("+ 添加常用格式")
+					.setButtonText(t("addFormat"))
 					.onClick(() => {
 						this.plugin.settings.favoriteFormats.push({
-							name: "新格式",
+							name: t("newFormat"),
 							dateFormat: "YYYY-MM-DD",
 							prefix: "",
 							suffix: "",
@@ -77,7 +90,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 		isDefault: boolean
 	): void {
 		const previewEl = container.createDiv({ cls: "atd-format-preview" });
-		previewEl.createEl("span", { text: "预览: " });
+		previewEl.createEl("span", { text: t("preview") });
 		const previewValue = previewEl.createEl("span", { cls: "atd-format-preview-value" });
 
 		const updatePreview = () => {
@@ -87,14 +100,14 @@ export class AtDateSettingTab extends PluginSettingTab {
 			previewValue.textContent = text;
 			if (!validateTemplate(format.dateFormat)) {
 				previewValue.addClass("is-invalid");
-				previewValue.textContent = "格式无效（缺少日期标记）";
+				previewValue.textContent = t("invalidFormat");
 			} else {
 				previewValue.removeClass("is-invalid");
 			}
 		};
 
 		new Setting(container)
-			.setName("格式名称")
+			.setName(t("formatName"))
 			.addText((text) =>
 				text.setValue(format.name).onChange(async (value) => {
 					format.name = value;
@@ -102,19 +115,19 @@ export class AtDateSettingTab extends PluginSettingTab {
 				})
 			);
 
-		new Setting(container)
-			.setName("日期格式")
-			.setDesc("支持: YYYY, YY, MM, M, DD, D")
-			.addText((text) =>
-				text.setValue(format.dateFormat).onChange(async (value) => {
-					format.dateFormat = value;
-					await this.plugin.saveSettings();
-					updatePreview();
-				})
-			);
+		const dateFormatSetting = new Setting(container)
+			.setName(t("dateFormat"))
+			.setDesc(t("dateFormatDesc"));
+		dateFormatSetting.addText((text) =>
+			this.attachFormatDropdown(text, format.dateFormat, async (value) => {
+				format.dateFormat = value;
+				await this.plugin.saveSettings();
+				updatePreview();
+			})
+		);
 
 		new Setting(container)
-			.setName("前缀")
+			.setName(t("prefix"))
 			.addText((text) =>
 				text.setValue(format.prefix).onChange(async (value) => {
 					format.prefix = value;
@@ -124,7 +137,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(container)
-			.setName("后缀")
+			.setName(t("suffix"))
 			.addText((text) =>
 				text.setValue(format.suffix).onChange(async (value) => {
 					format.suffix = value;
@@ -141,7 +154,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 
 		if (this.plugin.settings.favoriteFormats.length === 0) {
 			container.createEl("p", {
-				text: "暂无常用格式，点击下方按钮添加。",
+				text: t("noFormats"),
 				cls: "setting-item-description",
 			});
 			return;
@@ -157,7 +170,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 
 			if (i > 0) {
 				header.createEl("button", {
-					text: "上移",
+					text: t("moveUp"),
 					cls: "atd-format-item-btn",
 				}).addEventListener("click", async () => {
 					const formats = this.plugin.settings.favoriteFormats;
@@ -169,7 +182,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 
 			if (i < this.plugin.settings.favoriteFormats.length - 1) {
 				header.createEl("button", {
-					text: "下移",
+					text: t("moveDown"),
 					cls: "atd-format-item-btn",
 				}).addEventListener("click", async () => {
 					const formats = this.plugin.settings.favoriteFormats;
@@ -180,7 +193,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 			}
 
 			header.createEl("button", {
-				text: "删除",
+				text: t("delete"),
 				cls: "atd-format-item-btn atd-format-item-delete",
 			}).addEventListener("click", async () => {
 				this.plugin.settings.favoriteFormats.splice(i, 1);
@@ -190,7 +203,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 
 			// Inline editor
 			new Setting(formatEl)
-				.setName("格式名称")
+				.setName(t("formatName"))
 				.addText((text) =>
 					text.setValue(format.name).onChange(async (value) => {
 						format.name = value;
@@ -200,16 +213,16 @@ export class AtDateSettingTab extends PluginSettingTab {
 				);
 
 			new Setting(formatEl)
-				.setName("日期格式")
+				.setName(t("dateFormat"))
 				.addText((text) =>
-					text.setValue(format.dateFormat).onChange(async (value) => {
+					this.attachFormatDropdown(text, format.dateFormat, async (value) => {
 						format.dateFormat = value;
 						await this.plugin.saveSettings();
 					})
 				);
 
 			new Setting(formatEl)
-				.setName("前缀")
+				.setName(t("prefix"))
 				.addText((text) =>
 					text.setValue(format.prefix).onChange(async (value) => {
 						format.prefix = value;
@@ -218,7 +231,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 				);
 
 			new Setting(formatEl)
-				.setName("后缀")
+				.setName(t("suffix"))
 				.addText((text) =>
 					text.setValue(format.suffix).onChange(async (value) => {
 						format.suffix = value;
@@ -226,5 +239,51 @@ export class AtDateSettingTab extends PluginSettingTab {
 					})
 				);
 		}
+	}
+
+	private attachFormatDropdown(
+		text: TextComponent,
+		initialValue: string,
+		onChange: (value: string) => void
+	): void {
+		const controlEl = text.inputEl.parentElement!;
+		controlEl.addClass("atd-format-input-wrap");
+
+		const dropdownEl = controlEl.createDiv({ cls: "atd-format-dropdown" });
+
+		for (const item of RECOMMENDED_FORMATS) {
+			const itemEl = dropdownEl.createDiv({ cls: "atd-format-dropdown-item" });
+			itemEl.createEl("span", { cls: "atd-format-dropdown-label", text: item });
+
+			itemEl.addEventListener("mousedown", (e) => {
+				// Prevent input from losing focus so blur doesn't hide dropdown before click fires
+				e.preventDefault();
+			});
+
+			itemEl.addEventListener("click", () => {
+				text.setValue(item);
+				onChange(item);
+				dropdownEl.removeClass("is-visible");
+			});
+		}
+
+		text.inputEl.addEventListener("focus", () => {
+			dropdownEl.addClass("is-visible");
+		});
+
+		let blurTimer: ReturnType<typeof setTimeout>;
+		text.inputEl.addEventListener("blur", () => {
+			blurTimer = setTimeout(() => {
+				dropdownEl.removeClass("is-visible");
+			}, 150);
+		});
+
+		text.inputEl.addEventListener("keydown", (e) => {
+			if (e.key === "Escape") {
+				dropdownEl.removeClass("is-visible");
+			}
+		});
+
+		text.setValue(initialValue).onChange(onChange);
 	}
 }
