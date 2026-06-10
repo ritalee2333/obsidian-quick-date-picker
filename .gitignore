@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+node_modules 2/
 
 # Obsidian
 .obsidian/
@@ -15,3 +16,29 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# iCloud sync artifacts
+node_modules */
+
+# Obsolete intermediate docs (superseded by DEV-NOTES.md)
+design.md
+eng-review.md
+eng-review-test-plan.md
+findings.md
+progress.md
+task_plan.md
+tasks-eng-review.jsonl
+
+# Auto-sync verified
+
+# Other projects (accidentally added, should be ignored)
+Information-Table-Extraction-Tool/
+JobClaw_dynamic_portable/
+obsidian-kanban-plugin/
+obsidian-quick-date-picker/
+obsidian-quick-date-picker-dev/
+Resume Auto-Screening/
+resume-quality-evaluation/
+talent-review-2026/
+【配色和界面参考】/
+.remember/
