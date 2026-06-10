@@ -173,14 +173,14 @@ export class AtDateSettingTab extends PluginSettingTab {
 				header.createEl("button", {
 					text: t("moveUp"),
 					cls: "atd-format-item-btn",
-				}).addEventListener("click", async () => {
+				}).addEventListener("click", () => {
 					const formats = this.plugin.settings.favoriteFormats;
 					const curr = formats[i];
 					const prev = formats[i - 1];
 					if (curr && prev) {
 						formats[i] = prev;
 						formats[i - 1] = curr;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 						this.display();
 					}
 				});
@@ -190,14 +190,14 @@ export class AtDateSettingTab extends PluginSettingTab {
 				header.createEl("button", {
 					text: t("moveDown"),
 					cls: "atd-format-item-btn",
-				}).addEventListener("click", async () => {
+				}).addEventListener("click", () => {
 					const formats = this.plugin.settings.favoriteFormats;
 					const curr = formats[i];
 					const next = formats[i + 1];
 					if (curr && next) {
 						formats[i] = next;
 						formats[i + 1] = curr;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 						this.display();
 					}
 				});
@@ -206,9 +206,9 @@ export class AtDateSettingTab extends PluginSettingTab {
 			header.createEl("button", {
 				text: t("delete"),
 				cls: "atd-format-item-btn atd-format-item-delete",
-			}).addEventListener("click", async () => {
+			}).addEventListener("click", () => {
 				this.plugin.settings.favoriteFormats.splice(i, 1);
-				await this.plugin.saveSettings();
+				void this.plugin.saveSettings();
 				this.display();
 			});
 

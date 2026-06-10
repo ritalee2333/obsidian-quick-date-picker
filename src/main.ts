@@ -39,7 +39,7 @@ export default class AtDatePickerPlugin extends Plugin {
 			raw !== null && typeof raw === "object"
 				? (raw as Partial<AtDatePickerSettings>)
 				: null;
-		this.settings = JSON.parse(JSON.stringify({ ...DEFAULT_SETTINGS, ...(data || {}) }));
+		this.settings = JSON.parse(JSON.stringify({ ...DEFAULT_SETTINGS, ...(data || {}) })) as AtDatePickerSettings;
 	}
 
 	async saveSettings() {
