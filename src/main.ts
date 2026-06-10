@@ -8,7 +8,7 @@ import { isRelativeDateInput, parseRelativeDate } from "./relative-date";
 import { tf, detectAndSetLocale } from "./i18n";
 
 /** Popout-window compatible document reference */
-const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : document;
+const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : window.document;
 
 export default class AtDatePickerPlugin extends Plugin {
 	settings: AtDatePickerSettings;
@@ -34,7 +34,11 @@ export default class AtDatePickerPlugin extends Plugin {
 	private suggest: AtDateEditorSuggest | null = null;
 
 	async loadSettings() {
-		const data = (await this.loadData()) as Partial<AtDatePickerSettings> | null;
+		const raw: unknown = await this.loadData();
+		const data =
+			raw !== null && typeof raw === "object"
+				? (raw as Partial<AtDatePickerSettings>)
+				: null;
 		this.settings = JSON.parse(JSON.stringify({ ...DEFAULT_SETTINGS, ...(data || {}) }));
 	}
 

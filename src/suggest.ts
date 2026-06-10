@@ -13,7 +13,7 @@ import { formatDate } from "./format-engine";
 import { CalendarPopup } from "./calendar-popup";
 
 /** Popout-window compatible document reference */
-const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : document;
+const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : window.document;
 
 interface EditorWithCoords extends Editor {
 	coordsAtPos: (pos: EditorPosition) => { top: number; left: number; bottom: number } | null;

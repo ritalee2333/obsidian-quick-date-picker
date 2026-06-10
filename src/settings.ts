@@ -36,13 +36,13 @@ export class AtDateSettingTab extends PluginSettingTab {
 			.addText((text) =>
 				text
 					.setValue(this.plugin.settings.triggerChar)
-					.onChange(async (value) => {
+					.onChange((value) => {
 						if (!value || value.length === 0) {
 							new Notice(t("triggerCharEmpty"));
 							return;
 						}
 						this.plugin.settings.triggerChar = value;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 					})
 			);
 
@@ -53,9 +53,9 @@ export class AtDateSettingTab extends PluginSettingTab {
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.rememberLastFormat)
-					.onChange(async (value) => {
+					.onChange((value) => {
 						this.plugin.settings.rememberLastFormat = value;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 					})
 			);
 
@@ -109,9 +109,9 @@ export class AtDateSettingTab extends PluginSettingTab {
 		new Setting(container)
 			.setName(t("formatName"))
 			.addText((text) =>
-				text.setValue(format.name).onChange(async (value) => {
+				text.setValue(format.name).onChange((value) => {
 					format.name = value;
-					await this.plugin.saveSettings();
+					void this.plugin.saveSettings();
 				})
 			);
 
@@ -119,9 +119,9 @@ export class AtDateSettingTab extends PluginSettingTab {
 			.setName(t("dateFormat"))
 			.setDesc(t("dateFormatDesc"));
 		dateFormatSetting.addText((text) =>
-			this.attachFormatDropdown(text, format.dateFormat, async (value) => {
+			this.attachFormatDropdown(text, format.dateFormat, (value) => {
 				format.dateFormat = value;
-				await this.plugin.saveSettings();
+				void this.plugin.saveSettings();
 				updatePreview();
 			})
 		);
@@ -129,9 +129,9 @@ export class AtDateSettingTab extends PluginSettingTab {
 		new Setting(container)
 			.setName(t("prefix"))
 			.addText((text) =>
-				text.setValue(format.prefix).onChange(async (value) => {
+				text.setValue(format.prefix).onChange((value) => {
 					format.prefix = value;
-					await this.plugin.saveSettings();
+					void this.plugin.saveSettings();
 					updatePreview();
 				})
 			);
@@ -139,9 +139,9 @@ export class AtDateSettingTab extends PluginSettingTab {
 		new Setting(container)
 			.setName(t("suffix"))
 			.addText((text) =>
-				text.setValue(format.suffix).onChange(async (value) => {
+				text.setValue(format.suffix).onChange((value) => {
 					format.suffix = value;
-					await this.plugin.saveSettings();
+					void this.plugin.saveSettings();
 					updatePreview();
 				})
 			);
@@ -216,37 +216,37 @@ export class AtDateSettingTab extends PluginSettingTab {
 			new Setting(formatEl)
 				.setName(t("formatName"))
 				.addText((text) =>
-					text.setValue(format.name).onChange(async (value) => {
+					text.setValue(format.name).onChange((value) => {
 						format.name = value;
 						headerNameEl.textContent = value;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 					})
 				);
 
 			new Setting(formatEl)
 				.setName(t("dateFormat"))
 				.addText((text) =>
-					this.attachFormatDropdown(text, format.dateFormat, async (value) => {
+					this.attachFormatDropdown(text, format.dateFormat, (value) => {
 						format.dateFormat = value;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 					})
 				);
 
 			new Setting(formatEl)
 				.setName(t("prefix"))
 				.addText((text) =>
-					text.setValue(format.prefix).onChange(async (value) => {
+					text.setValue(format.prefix).onChange((value) => {
 						format.prefix = value;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 					})
 				);
 
 			new Setting(formatEl)
 				.setName(t("suffix"))
 				.addText((text) =>
-					text.setValue(format.suffix).onChange(async (value) => {
+					text.setValue(format.suffix).onChange((value) => {
 						format.suffix = value;
-						await this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 					})
 				);
 		}

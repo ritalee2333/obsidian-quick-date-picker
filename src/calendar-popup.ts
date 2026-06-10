@@ -4,7 +4,7 @@ import AtDatePickerPlugin from "./main";
 import { t, tf } from "./i18n";
 
 /** Popout-window compatible document reference */
-const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : document;
+const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : window.document;
 
 interface AppWithSetting {
 	setting: {
