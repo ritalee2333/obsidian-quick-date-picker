@@ -12,26 +12,39 @@ import { isRelativeDateInput, parseRelativeDate } from "./relative-date";
 import { formatDate } from "./format-engine";
 import { CalendarPopup } from "./calendar-popup";
 
+/** Popout-window compatible document reference */
+const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : document;
+
+interface EditorWithCoords extends Editor {
+	coordsAtPos: (pos: EditorPosition) => { top: number; left: number; bottom: number } | null;
+}
+
+interface WorkspaceWithActiveEditor {
+	activeEditor?: {
+		editor: Editor;
+	};
+}
+
 export class AtDateEditorSuggest extends EditorSuggest<string> {
 	plugin: AtDatePickerPlugin;
 	popup: CalendarPopup | null = null;
-	private appRef: any;
+	private appRef: App;
 	private isComposing = false;
-	private compositionEndTimer: ReturnType<typeof setTimeout> | null = null;
+	private compositionEndTimer: number | null = null;
 	private activeQuery = "";
 
 	constructor(app: App, plugin: AtDatePickerPlugin) {
 		super(app);
 		this.appRef = app;
 		this.plugin = plugin;
-		this.plugin.registerDomEvent(document, "compositionstart", () => {
+		this.plugin.registerDomEvent(DOC, "compositionstart", () => {
 			this.isComposing = true;
 		});
-		this.plugin.registerDomEvent(document, "compositionend", () => {
+		this.plugin.registerDomEvent(DOC, "compositionend", () => {
 			if (this.compositionEndTimer) {
-				clearTimeout(this.compositionEndTimer);
+				window.clearTimeout(this.compositionEndTimer);
 			}
-			this.compositionEndTimer = setTimeout(() => {
+			this.compositionEndTimer = window.setTimeout(() => {
 				this.replaceRelativeDateAtCursor(true);
 				this.isComposing = false;
 				this.compositionEndTimer = null;
@@ -63,7 +76,8 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 
 		if (triggerIndex === -1) return null;
 
-		const query = beforeCursor.slice(triggerIndex + trigger.length);
+		const rawQuery = beforeCursor.slice(triggerIndex + trigger.length);
+		const query = rawQuery.trimStart();
 
 		if (!this.shouldKeepPopupForQuery(query)) {
 			this.closePopup();
@@ -75,8 +89,10 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 			return null;
 		}
 
+		// Adjust end position to consume trailing whitespace for clean replacement
+		const trailingSpaces = rawQuery.length - rawQuery.trimEnd().length;
+		const end: EditorPosition = { line: cursor.line, ch: cursor.ch + trailingSpaces };
 		const start: EditorPosition = { line: cursor.line, ch: triggerIndex };
-		const end: EditorPosition = cursor;
 
 		return { start, end, query };
 	}
@@ -102,7 +118,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 				ch: context.start.ch + text.length,
 			});
 			this.plugin.settings.lastUsedFormat = template;
-			this.plugin.saveSettings();
+			void this.plugin.saveSettings();
 			this.activeQuery = "";
 			return [];
 		}
@@ -118,7 +134,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 			});
 			if (this.plugin.settings.rememberLastFormat) {
 				this.plugin.settings.lastUsedFormat = format;
-				this.plugin.saveSettings();
+				void this.plugin.saveSettings();
 			}
 			// Restore focus before destroying popup so the cursor doesn't vanish
 			// when the focused button element is removed from the DOM.
@@ -131,7 +147,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 
 		// Position popup below cursor
 		// Obsidian Editor.coordsAtPos exists at runtime but is missing from typings
-		const coords = (context.editor as any).coordsAtPos(context.end);
+		const coords = (context.editor as EditorWithCoords).coordsAtPos(context.end);
 		if (coords) {
 			this.popup.openAtCoords(coords, false);
 		}
@@ -140,7 +156,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 		// We must defer so Obsidian finishes opening the panel before we close it,
 		// then manually refocus the editor because Obsidian doesn't restore focus
 		// automatically when the panel is dismissed programmatically.
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.close();
 			context.editor.focus();
 		}, 50);
@@ -159,7 +175,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 
 	destroy(): void {
 		if (this.compositionEndTimer) {
-			clearTimeout(this.compositionEndTimer);
+			window.clearTimeout(this.compositionEndTimer);
 			this.compositionEndTimer = null;
 		}
 		this.closePopup();
@@ -174,7 +190,8 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 	}
 
 	private replaceRelativeDateAtCursor(cleanupImeUnit = false): void {
-		const editor = this.appRef.workspace?.activeEditor?.editor as Editor | undefined;
+		const workspace = (this.appRef as { workspace?: WorkspaceWithActiveEditor }).workspace;
+		const editor = workspace?.activeEditor?.editor;
 		if (!editor) return;
 
 		const cursor = editor.getCursor();
@@ -202,17 +219,21 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 		if (cleanupImeUnit) {
 			this.cleanupTrailingImeUnit(editor, insertedEnd, query);
 		}
+		// Reset IME composition state to prevent trailing character output
+		editor.blur();
+		editor.focus();
 		this.plugin.settings.lastUsedFormat = template;
-		this.plugin.saveSettings();
+		void this.plugin.saveSettings();
 		this.closePopup();
 	}
 
 	private shouldKeepPopupForQuery(query: string): boolean {
-		if (query.length === 0) return true;
-		if (query.startsWith("+") || query.startsWith("-")) {
-			return isRelativeDateInput(query);
+		const trimmed = query.trimStart();
+		if (trimmed.length === 0) return true;
+		if (trimmed.startsWith("+") || trimmed.startsWith("-")) {
+			return isRelativeDateInput(trimmed);
 		}
-		return query.length < 3;
+		return trimmed.length < 3;
 	}
 
 	private handleEditorEnter(evt: KeyboardEvent): void {
@@ -222,7 +243,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 			this.isComposing ||
 			this.activeQuery.length > 0 ||
 			!this.popup ||
-			this.popup.containerEl.contains(document.activeElement)
+			this.popup.containerEl.contains(DOC.activeElement)
 		) {
 			return;
 		}
@@ -237,7 +258,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 		if (!/^[dwmy]$/.test(unit)) return;
 
 		for (const delay of [0, 30, 80, 160]) {
-			setTimeout(() => {
+			window.setTimeout(() => {
 				const lineText = editor.getLine(position.line);
 				let count = 0;
 				while (

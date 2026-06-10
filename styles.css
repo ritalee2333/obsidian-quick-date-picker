@@ -13,18 +13,43 @@
 	--atd-preview-margin-top: 8px;
 	--atd-format-margin-top: 8px;
 	--atd-nav-height: 28px;
+	--atd-popup-left: auto;
+	--atd-popup-top: auto;
 
 	position: absolute;
 	z-index: 1000;
 	display: flex;
 	gap: 12px;
 	width: auto;
+	left: var(--atd-popup-left);
+	top: var(--atd-popup-top);
 	background: var(--background-primary);
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--atd-border-radius);
 	padding: var(--atd-popup-padding);
 	font-family: var(--font-interface);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	transition: opacity 150ms ease-out, transform 150ms ease-out;
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* Animation states */
+.at-date-popup.is-opening {
+	opacity: 0;
+	transform: translateY(-4px);
+}
+
+.at-date-popup.is-closing {
+	transition: opacity 100ms ease-in, transform 100ms ease-in;
+	opacity: 0;
+	transform: translateY(-4px);
+}
+
+/* Preview flash */
+.at-date-preview.is-flashing {
+	transition: opacity 100ms ease;
+	opacity: 0.5;
 }
 
 .at-date-calendar-section {
@@ -346,7 +371,7 @@
 	.at-date-popup {
 		flex-direction: column;
 		width: calc(100vw - 16px);
-		left: 8px !important;
+		left: 8px;
 	}
 
 	.at-date-calendar-section,

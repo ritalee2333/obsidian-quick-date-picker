@@ -10,11 +10,11 @@ export interface RelativeDateResult {
  * while the user is still typing.
  */
 export function isRelativeDateInput(query: string): boolean {
-	return /^[+-]?\d*[dwmy]?$/i.test(query);
+	return /^[+-]?\s*\d*\s*[dwmy]?$/i.test(query.trim());
 }
 
 export function parseRelativeDate(query: string): RelativeDateResult | null {
-	const match = query.match(/^([+-])(\d+)([dwmy])$/i);
+	const match = query.trim().match(/^([+-])\s*(\d+)\s*([dwmy])$/i);
 	if (!match) return null;
 
 	const sign = match[1]! === "+" ? 1 : -1;

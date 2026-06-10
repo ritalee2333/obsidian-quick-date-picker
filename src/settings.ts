@@ -1,8 +1,8 @@
 import { App, PluginSettingTab, Setting, Notice, TextComponent } from "obsidian";
 import AtDatePickerPlugin from "./main";
-import { FormatTemplate, DEFAULT_SETTINGS } from "./types";
+import { FormatTemplate } from "./types";
 import { validateTemplate, formatDate } from "./format-engine";
-import { t, tf } from "./i18n";
+import { t } from "./i18n";
 
 const RECOMMENDED_FORMATS = [
 	"YYYY-MM-DD",
@@ -27,7 +27,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		containerEl.createEl("h2", { text: t("settingTitle") });
+		new Setting(containerEl).setName(t("settingTitle")).setHeading();
 
 		// Trigger character
 		new Setting(containerEl)
@@ -59,10 +59,10 @@ export class AtDateSettingTab extends PluginSettingTab {
 					})
 			);
 
-		containerEl.createEl("h3", { text: t("defaultFormat"), cls: "setting-item-heading" });
+		new Setting(containerEl).setName(t("defaultFormat")).setHeading();
 		this.renderFormatEditor(containerEl, this.plugin.settings.defaultFormat, true);
 
-		containerEl.createEl("h3", { text: t("favoriteFormats"), cls: "setting-item-heading" });
+		new Setting(containerEl).setName(t("favoriteFormats")).setHeading();
 		const formatListContainer = containerEl.createDiv({ cls: "atd-format-list" });
 		this.renderFormatList(formatListContainer);
 
@@ -78,7 +78,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 							prefix: "",
 							suffix: "",
 						});
-						this.plugin.saveSettings();
+						void this.plugin.saveSettings();
 						this.display();
 					})
 			);
@@ -161,7 +161,8 @@ export class AtDateSettingTab extends PluginSettingTab {
 		}
 
 		for (let i = 0; i < this.plugin.settings.favoriteFormats.length; i++) {
-			const format = this.plugin.settings.favoriteFormats[i]!;
+			const format = this.plugin.settings.favoriteFormats[i];
+			if (!format) continue;
 			const formatEl = container.createDiv({ cls: "atd-format-item" });
 
 			// Header with name and delete button
@@ -174,9 +175,14 @@ export class AtDateSettingTab extends PluginSettingTab {
 					cls: "atd-format-item-btn",
 				}).addEventListener("click", async () => {
 					const formats = this.plugin.settings.favoriteFormats;
-					[formats[i]!, formats[i - 1]!] = [formats[i - 1]!, formats[i]!];
-					await this.plugin.saveSettings();
-					this.display();
+					const curr = formats[i];
+					const prev = formats[i - 1];
+					if (curr && prev) {
+						formats[i] = prev;
+						formats[i - 1] = curr;
+						await this.plugin.saveSettings();
+						this.display();
+					}
 				});
 			}
 
@@ -186,9 +192,14 @@ export class AtDateSettingTab extends PluginSettingTab {
 					cls: "atd-format-item-btn",
 				}).addEventListener("click", async () => {
 					const formats = this.plugin.settings.favoriteFormats;
-					[formats[i]!, formats[i + 1]!] = [formats[i + 1]!, formats[i]!];
-					await this.plugin.saveSettings();
-					this.display();
+					const curr = formats[i];
+					const next = formats[i + 1];
+					if (curr && next) {
+						formats[i] = next;
+						formats[i + 1] = curr;
+						await this.plugin.saveSettings();
+						this.display();
+					}
 				});
 			}
 
@@ -271,9 +282,8 @@ export class AtDateSettingTab extends PluginSettingTab {
 			dropdownEl.addClass("is-visible");
 		});
 
-		let blurTimer: ReturnType<typeof setTimeout>;
 		text.inputEl.addEventListener("blur", () => {
-			blurTimer = setTimeout(() => {
+			window.setTimeout(() => {
 				dropdownEl.removeClass("is-visible");
 			}, 150);
 		});

@@ -5,8 +5,14 @@ const EN_MONTH_NAMES = [
 	"July", "August", "September", "October", "November", "December",
 ];
 
+interface WindowWithMoment extends Window {
+	moment?: {
+		locale: () => string;
+	};
+}
+
 function detectLocale(): Locale {
-	const momentLocale = (window as any).moment?.locale?.();
+	const momentLocale = (window as WindowWithMoment).moment?.locale?.();
 	if (momentLocale) {
 		// Obsidian syncs interface language to moment — trust it when available
 		return momentLocale.startsWith("zh") ? "zh" : "en";
@@ -30,7 +36,9 @@ export function getLocale(): Locale {
 	return currentLocale;
 }
 
-const dicts: Record<Locale, Record<string, string | ((...args: any[]) => string)>> = {
+type TranslationValue = string | ((...args: unknown[]) => string);
+
+const dicts: Record<Locale, Record<string, TranslationValue>> = {
 	zh: {
 		settingTitle: "Quick Date Picker 设置",
 		triggerChar: "触发字符",
@@ -99,18 +107,18 @@ const dicts: Record<Locale, Record<string, string | ((...args: any[]) => string)
 
 /** Simple string lookup */
 export function t(key: string): string {
-	const value = (dicts[currentLocale] as any)?.[key];
+	const value = dicts[currentLocale][key];
 	if (typeof value === "string") return value;
-	const fallback = (dicts.en as any)?.[key];
+	const fallback = dicts.en[key];
 	if (typeof fallback === "string") return fallback;
 	return key;
 }
 
 /** Lookup with function arguments (e.g. navTitle, previewLabel) */
-export function tf(key: string, ...args: any[]): string {
-	const value = (dicts[currentLocale] as any)?.[key];
+export function tf(key: string, ...args: unknown[]): string {
+	const value = dicts[currentLocale][key];
 	if (typeof value === "function") return value(...args);
-	const fallback = (dicts.en as any)?.[key];
+	const fallback = dicts.en[key];
 	if (typeof fallback === "function") return fallback(...args);
 	return key;
 }

@@ -3,6 +3,16 @@ import { formatDate } from "./format-engine";
 import AtDatePickerPlugin from "./main";
 import { t, tf } from "./i18n";
 
+/** Popout-window compatible document reference */
+const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : document;
+
+interface AppWithSetting {
+	setting: {
+		open: () => void;
+		openTabById: (id: string) => void;
+	};
+}
+
 interface Coords {
 	top: number;
 	left: number;
@@ -48,7 +58,7 @@ export class CalendarPopup {
 	}
 
 	openAtCoords(coords: Coords, focusCalendar = true): void {
-		document.body.appendChild(this.containerEl);
+		DOC.body.appendChild(this.containerEl);
 
 		const rect = this.containerEl.getBoundingClientRect();
 		const viewportWidth = window.innerWidth;
@@ -69,46 +79,42 @@ export class CalendarPopup {
 		if (left < 8) left = 8;
 		if (top < 8) top = 8;
 
-		this.containerEl.style.left = `${left}px`;
-		this.containerEl.style.top = `${top}px`;
+		this.containerEl.style.setProperty("--atd-popup-left", `${left}px`);
+		this.containerEl.style.setProperty("--atd-popup-top", `${top}px`);
 
-		// Animation
-		this.containerEl.style.opacity = "0";
-		this.containerEl.style.transform = "translateY(-4px)";
-		requestAnimationFrame(() => {
-			this.containerEl.style.transition = "opacity 150ms ease-out, transform 150ms ease-out";
-			this.containerEl.style.opacity = "1";
-			this.containerEl.style.transform = "translateY(0)";
+		// Animation via CSS classes
+		this.containerEl.addClass("is-opening");
+		window.requestAnimationFrame(() => {
+			this.containerEl.removeClass("is-opening");
 		});
 
-		document.addEventListener("keydown", this.keydownHandler);
-		document.addEventListener("click", this.clickOutsideHandler);
+		DOC.addEventListener("keydown", this.keydownHandler);
+		DOC.addEventListener("click", this.clickOutsideHandler);
 		if (focusCalendar) {
 			this.focusDate(this.selectedDate);
 		}
 	}
 
 	close(): void {
-		document.removeEventListener("keydown", this.keydownHandler);
-		document.removeEventListener("click", this.clickOutsideHandler);
+		DOC.removeEventListener("keydown", this.keydownHandler);
+		DOC.removeEventListener("click", this.clickOutsideHandler);
 
-		this.containerEl.style.transition = "opacity 100ms ease-in, transform 100ms ease-in";
-		this.containerEl.style.opacity = "0";
-		this.containerEl.style.transform = "translateY(-4px)";
+		this.containerEl.addClass("is-closing");
 
-		setTimeout(() => {
+		window.setTimeout(() => {
 			this.containerEl.detach();
+			this.containerEl.removeClass("is-closing");
 		}, 100);
 	}
 
 	destroy(): void {
-		document.removeEventListener("keydown", this.keydownHandler);
-		document.removeEventListener("click", this.clickOutsideHandler);
+		DOC.removeEventListener("keydown", this.keydownHandler);
+		DOC.removeEventListener("click", this.clickOutsideHandler);
 		this.containerEl.remove();
 	}
 
 	private createDOM(): HTMLElement {
-		const el = document.createElement("div");
+		const el = DOC.createElement("div");
 		el.addClass("at-date-popup");
 		el.setAttribute("role", "dialog");
 		el.setAttribute("aria-modal", "true");
@@ -138,7 +144,7 @@ export class CalendarPopup {
 			cls: "at-date-nav-btn at-date-nav-prev",
 			attr: { tabindex: "-1" },
 		});
-		const title = nav.createEl("span", { cls: "at-date-nav-title" });
+		nav.createEl("span", { cls: "at-date-nav-title" });
 		const nextBtn = nav.createEl("button", {
 			text: ">",
 			cls: "at-date-nav-btn at-date-nav-next",
@@ -188,10 +194,9 @@ export class CalendarPopup {
 				cls: "at-date-format-settings-link",
 			});
 			settingsLink.addEventListener("click", () => {
-				// Obsidian's setting API is not fully typed; cast to any for runtime access
-				const appAny = this.plugin.app as any;
-				appAny.setting.open();
-				appAny.setting.openTabById(this.plugin.manifest.id);
+				const appWithSetting = this.plugin.app as unknown as AppWithSetting;
+				appWithSetting.setting.open();
+				appWithSetting.setting.openTabById(this.plugin.manifest.id);
 			});
 		} else {
 			for (let i = 0; i < formats.length; i++) {
@@ -318,11 +323,10 @@ export class CalendarPopup {
 		}
 		this.updatePreview();
 
-		// Flash animation
-		this.previewEl.style.transition = "opacity 100ms ease";
-		this.previewEl.style.opacity = "0.5";
-		setTimeout(() => {
-			this.previewEl.style.opacity = "1";
+		// Flash animation via CSS class
+		this.previewEl.addClass("is-flashing");
+		window.setTimeout(() => {
+			this.previewEl.removeClass("is-flashing");
 		}, 100);
 	}
 
@@ -344,7 +348,7 @@ export class CalendarPopup {
 	}
 
 	private handleKeydown(e: KeyboardEvent): void {
-		if (!this.containerEl.contains(document.activeElement)) {
+		if (!this.containerEl.contains(DOC.activeElement)) {
 			return;
 		}
 

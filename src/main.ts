@@ -7,6 +7,9 @@ import { formatDate } from "./format-engine";
 import { isRelativeDateInput, parseRelativeDate } from "./relative-date";
 import { tf, detectAndSetLocale } from "./i18n";
 
+/** Popout-window compatible document reference */
+const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : document;
+
 export default class AtDatePickerPlugin extends Plugin {
 	settings: AtDatePickerSettings;
 	titlePopup: CalendarPopup | null = null;
@@ -31,7 +34,8 @@ export default class AtDatePickerPlugin extends Plugin {
 	private suggest: AtDateEditorSuggest | null = null;
 
 	async loadSettings() {
-		this.settings = JSON.parse(JSON.stringify({ ...DEFAULT_SETTINGS, ...(await this.loadData()) }));
+		const data = (await this.loadData()) as Partial<AtDatePickerSettings> | null;
+		this.settings = JSON.parse(JSON.stringify({ ...DEFAULT_SETTINGS, ...(data || {}) }));
 	}
 
 	async saveSettings() {
@@ -45,7 +49,7 @@ export default class AtDatePickerPlugin extends Plugin {
 	}
 
 	private registerTitleInputHandler(): void {
-		this.registerDomEvent(document, "input", (evt: InputEvent) => {
+		this.registerDomEvent(DOC, "input", (evt: InputEvent) => {
 			if (this.isDispatchingTitleInput) return;
 
 			const target = evt.target as HTMLElement;
@@ -80,7 +84,10 @@ export default class AtDatePickerPlugin extends Plugin {
 				this.setTitleCursor(target, triggerIndex + dateText.length);
 				this.dispatchTitleInput(target, dateText);
 				this.settings.lastUsedFormat = template;
-				this.saveSettings();
+				void this.saveSettings();
+				// Reset IME composition state to prevent trailing character output
+				target.blur();
+				target.focus();
 				this.closeTitlePopup();
 				return;
 			}
@@ -101,7 +108,7 @@ export default class AtDatePickerPlugin extends Plugin {
 
 				if (this.settings.rememberLastFormat) {
 					this.settings.lastUsedFormat = format;
-					this.saveSettings();
+					void this.saveSettings();
 				}
 				// Refocus title before destroying popup to keep the cursor alive
 				target.focus();
@@ -138,7 +145,7 @@ export default class AtDatePickerPlugin extends Plugin {
 
 	private registerTitleEnterHandler(): void {
 		this.registerDomEvent(
-			document,
+			DOC,
 			"keydown",
 			(evt: KeyboardEvent) => {
 				this.handleTitleEnter(evt);
@@ -150,7 +157,7 @@ export default class AtDatePickerPlugin extends Plugin {
 	private handleTitleEnter(evt: KeyboardEvent): void {
 		if (evt.key !== "Enter" || !this.titlePopup) return;
 
-		const activeEl = document.activeElement as HTMLElement | null;
+		const activeEl = DOC.activeElement as HTMLElement | null;
 		if (!activeEl) return;
 
 		const focusInTitle = this.isTitleInputElement(activeEl);
@@ -167,7 +174,7 @@ export default class AtDatePickerPlugin extends Plugin {
 		const textNode = target.firstChild;
 		if (!selection || !textNode) return;
 
-		const newRange = document.createRange();
+		const newRange = DOC.createRange();
 		newRange.setStart(textNode, Math.min(offset, textNode.textContent?.length ?? 0));
 		newRange.collapse(true);
 		selection.removeAllRanges();
