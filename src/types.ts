@@ -53,12 +53,6 @@ export const DEFAULT_SETTINGS: AtDatePickerSettings = {
 			prefix: "",
 			suffix: "",
 		},
-		{
-			name: "US Numeric",
-			dateFormat: "MM/DD/YYYY",
-			prefix: "",
-			suffix: "",
-		},
 	],
 	rememberLastFormat: true,
 	lastUsedFormat: null,

@@ -278,12 +278,103 @@
 .atd-format-list-host {
 	width: 100%;
 	margin: 0 0 8px;
+	box-sizing: border-box;
+}
+
+/*
+ * Default-format body uses the same horizontal inset as .atd-format-item
+ * so "预览" lines up with favorite-format previews.
+ * (Cannot put padding on .atd-format-editor-host — block-host forces padding:0 !important.)
+ */
+.atd-format-editor-body {
+	padding: 8px 12px;
+	box-sizing: border-box;
+	width: 100%;
 }
 
 .atd-format-editor-host > .setting-item,
 .atd-format-item > .setting-item {
 	width: 100%;
 	box-sizing: border-box;
+}
+
+/* name|dateFormat and prefix|suffix — shared borders for both columns */
+.atd-format-fields {
+	position: relative;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+/* One continuous vertical divider through both rows */
+.atd-format-fields::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	width: 1px;
+	background: var(--background-modifier-border);
+	pointer-events: none;
+	z-index: 1;
+}
+
+.atd-format-fields-row {
+	display: flex;
+	gap: 0;
+	width: 100%;
+	align-items: stretch;
+	box-sizing: border-box;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.atd-format-fields-row > .setting-item {
+	flex: 1 1 0;
+	min-width: 0;
+	width: auto;
+	box-sizing: border-box;
+	border: none !important;
+	border-top: none !important;
+	box-shadow: none !important;
+	padding-top: 0.75em;
+	padding-bottom: 0.75em;
+	padding-left: 0;
+	padding-right: 12px;
+	background: transparent !important;
+}
+
+.atd-format-fields-row > .setting-item:last-child {
+	padding-left: 12px;
+	padding-right: 0;
+}
+
+.atd-format-fields-row .setting-item-control {
+	flex-shrink: 0;
+}
+
+.atd-format-fields-row .setting-item-control input[type="text"] {
+	width: 100%;
+	min-width: 0;
+	max-width: 160px;
+}
+
+@media (max-width: 720px) {
+	.atd-format-fields::before {
+		display: none;
+	}
+
+	.atd-format-fields-row {
+		flex-direction: column;
+	}
+
+	.atd-format-fields-row > .setting-item,
+	.atd-format-fields-row > .setting-item:last-child {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.atd-format-fields-row > .setting-item + .setting-item {
+		border-top: 1px solid var(--background-modifier-border) !important;
+	}
 }
 
 .atd-format-preview {
@@ -350,6 +441,18 @@
 .atd-format-item-delete:hover {
 	color: var(--text-error);
 	border-color: var(--text-error);
+}
+
+.atd-format-item-set-default:hover {
+	color: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+}
+
+.atd-format-item-is-default {
+	color: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+	opacity: 0.85;
+	cursor: default;
 }
 
 /* Format Dropdown */

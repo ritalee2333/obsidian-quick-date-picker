@@ -1,8 +1,26 @@
-import { App, PluginSettingTab, Setting, SettingDefinitionItem, TextComponent } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting, SettingDefinitionItem, TextComponent } from "obsidian";
 import AtDatePickerPlugin from "./main";
 import { FormatTemplate } from "./types";
 import { validateTemplate, formatDate, formatOptionsFromSettings } from "./format-engine";
 import { t, syncWeekdayDefaultsForLocale } from "./i18n";
+
+function formatsEqual(a: FormatTemplate, b: FormatTemplate): boolean {
+	return (
+		a.name === b.name &&
+		a.dateFormat === b.dateFormat &&
+		a.prefix === b.prefix &&
+		a.suffix === b.suffix
+	);
+}
+
+function cloneFormat(format: FormatTemplate): FormatTemplate {
+	return {
+		name: format.name,
+		dateFormat: format.dateFormat,
+		prefix: format.prefix,
+		suffix: format.suffix,
+	};
+}
 
 const RECOMMENDED_FORMATS = [
 	"YYYY-MM-DD",
@@ -90,8 +108,10 @@ export class AtDateSettingTab extends PluginSettingTab {
 						searchable: false,
 						render: (setting) => {
 							const host = this.prepareBlockHost(setting, "atd-format-editor-host");
+							// Inner body matches .atd-format-item padding for preview alignment.
+							const body = host.createDiv({ cls: "atd-format-editor-body" });
 							this.renderFormatEditor(
-								host,
+								body,
 								this.plugin.settings.defaultFormat,
 								true
 							);
@@ -113,7 +133,8 @@ export class AtDateSettingTab extends PluginSettingTab {
 						},
 					},
 					{
-						name: t("addFormat"),
+						// Empty name avoids a duplicate left-side label next to the button.
+						name: "",
 						searchable: false,
 						render: (setting) => {
 							setting.clear();
@@ -171,47 +192,73 @@ export class AtDateSettingTab extends PluginSettingTab {
 			}
 		};
 
-		new Setting(container)
+		this.renderFormatFields(container, format, {
+			showDateFormatDesc: true,
+			onPreviewUpdate: updatePreview,
+		});
+
+		updatePreview();
+	}
+
+	/**
+	 * Two-column field layout:
+	 * row1 = name | date format, row2 = prefix | suffix
+	 */
+	private renderFormatFields(
+		container: HTMLElement,
+		format: FormatTemplate,
+		options: {
+			showDateFormatDesc?: boolean;
+			onNameChange?: (value: string) => void;
+			onPreviewUpdate: () => void;
+		}
+	): void {
+		const fields = container.createDiv({ cls: "atd-format-fields" });
+		const nameDateRow = fields.createDiv({ cls: "atd-format-fields-row" });
+
+		new Setting(nameDateRow)
 			.setName(t("formatName"))
 			.addText((text) =>
 				text.setValue(format.name).onChange((value) => {
 					format.name = value;
+					options.onNameChange?.(value);
 					void this.plugin.saveSettings();
 				})
 			);
 
-		const dateFormatSetting = new Setting(container)
-			.setName(t("dateFormat"))
-			.setDesc(t("dateFormatDesc"));
+		const dateFormatSetting = new Setting(nameDateRow).setName(t("dateFormat"));
+		if (options.showDateFormatDesc) {
+			dateFormatSetting.setDesc(t("dateFormatDesc"));
+		}
 		dateFormatSetting.addText((text) =>
 			this.attachFormatDropdown(text, format.dateFormat, (value) => {
 				format.dateFormat = value;
 				void this.plugin.saveSettings();
-				updatePreview();
+				options.onPreviewUpdate();
 			})
 		);
 
-		new Setting(container)
+		const prefixSuffixRow = fields.createDiv({ cls: "atd-format-fields-row" });
+
+		new Setting(prefixSuffixRow)
 			.setName(t("prefix"))
 			.addText((text) =>
 				text.setValue(format.prefix).onChange((value) => {
 					format.prefix = value;
 					void this.plugin.saveSettings();
-					updatePreview();
+					options.onPreviewUpdate();
 				})
 			);
 
-		new Setting(container)
+		new Setting(prefixSuffixRow)
 			.setName(t("suffix"))
 			.addText((text) =>
 				text.setValue(format.suffix).onChange((value) => {
 					format.suffix = value;
 					void this.plugin.saveSettings();
-					updatePreview();
+					options.onPreviewUpdate();
 				})
 			);
-
-		updatePreview();
 	}
 
 	private renderFormatList(container: HTMLElement): void {
@@ -232,6 +279,25 @@ export class AtDateSettingTab extends PluginSettingTab {
 
 			const header = formatEl.createDiv({ cls: "atd-format-item-header" });
 			const headerNameEl = header.createSpan({ text: format.name, cls: "atd-format-item-name" });
+			const isDefault = formatsEqual(format, this.plugin.settings.defaultFormat);
+
+			// Only updates defaultFormat — does not touch rememberLastFormat / lastUsedFormat.
+			const setDefaultBtn = header.createEl("button", {
+				text: isDefault ? t("isDefault") : t("setAsDefault"),
+				cls: isDefault
+					? "atd-format-item-btn atd-format-item-is-default"
+					: "atd-format-item-btn atd-format-item-set-default",
+			});
+			if (isDefault) {
+				setDefaultBtn.disabled = true;
+			} else {
+				setDefaultBtn.addEventListener("click", () => {
+					this.plugin.settings.defaultFormat = cloneFormat(format);
+					void this.plugin.saveSettings();
+					new Notice(t("setAsDefaultDone"));
+					this.update();
+				});
+			}
 
 			if (i > 0) {
 				header.createEl("button", {
@@ -291,45 +357,12 @@ export class AtDateSettingTab extends PluginSettingTab {
 				);
 			};
 
-			new Setting(formatEl)
-				.setName(t("formatName"))
-				.addText((text) =>
-					text.setValue(format.name).onChange((value) => {
-						format.name = value;
-						headerNameEl.textContent = value;
-						void this.plugin.saveSettings();
-					})
-				);
-
-			new Setting(formatEl)
-				.setName(t("dateFormat"))
-				.addText((text) =>
-					this.attachFormatDropdown(text, format.dateFormat, (value) => {
-						format.dateFormat = value;
-						void this.plugin.saveSettings();
-						updateFavoritePreview();
-					})
-				);
-
-			new Setting(formatEl)
-				.setName(t("prefix"))
-				.addText((text) =>
-					text.setValue(format.prefix).onChange((value) => {
-						format.prefix = value;
-						void this.plugin.saveSettings();
-						updateFavoritePreview();
-					})
-				);
-
-			new Setting(formatEl)
-				.setName(t("suffix"))
-				.addText((text) =>
-					text.setValue(format.suffix).onChange((value) => {
-						format.suffix = value;
-						void this.plugin.saveSettings();
-						updateFavoritePreview();
-					})
-				);
+			this.renderFormatFields(formatEl, format, {
+				onNameChange: (value) => {
+					headerNameEl.textContent = value;
+				},
+				onPreviewUpdate: updateFavoritePreview,
+			});
 
 			updateFavoritePreview();
 		}
