@@ -1,23 +1,17 @@
-## What's New in 1.2.0
-
-### Added
-- Optional weekday output after the date (Chinese / Chinese short / English / English short)
-- Custom date–weekday arrangement patterns (e.g. `日期 星期`, `{date} ({weekday})`)
-- Weekday-related defaults auto-switch with Obsidian language
-- Red preview text for every format in Settings
+## What's New in 1.2.1
 
 ### Improved
-- Settings and calendar UI continue to follow Obsidian language (zh → Simplified Chinese, others → English)
+- Settings adopt Obsidian 1.13 declarative `getSettingDefinitions()` (still works on older versions via `display()`)
+- Prefer Obsidian DOM helpers (`createDiv` / `createSpan`) over `document.createElement`
+- Tighten TypeScript typing around date formatting and editor suggest
+- Automated GitHub Releases with artifact attestations for `main.js`, `manifest.json`, and `styles.css`
 
 ---
 
-## 1.2.0 更新内容
-
-### 新增
-- 可选输出星期（中文 / 中文简写 / 英文 / 英文简写）
-- 自定义「日期 + 星期」排列（如 `日期 星期`、`{date} ({weekday})`）
-- 星期相关默认选项随系统语言自动切换
-- 设置页每个格式都有红色预览
+## 1.2.1 更新内容
 
 ### 优化
-- 界面语言继续跟随 Obsidian（中文用简体，其他语言用英文）
+- 设置页支持 Obsidian 1.13 声明式 `getSettingDefinitions()`（旧版本仍走 `display()`）
+- DOM 创建改用 Obsidian 的 `createDiv` / `createSpan`
+- 加强日期格式化与编辑器建议相关的 TypeScript 类型
+- 用 GitHub Actions 自动发版，并为发布资源生成 artifact attestation

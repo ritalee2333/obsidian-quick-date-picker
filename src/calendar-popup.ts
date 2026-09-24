@@ -114,8 +114,9 @@ export class CalendarPopup {
 	}
 
 	private createDOM(): HTMLElement {
-		const el = DOC.createElement("div");
-		el.addClass("at-date-popup");
+		// Create in the active document (popout-safe), then detach for later append.
+		const el = DOC.body.createDiv({ cls: "at-date-popup" });
+		el.detach();
 		el.setAttribute("role", "dialog");
 		el.setAttribute("aria-modal", "true");
 
@@ -144,7 +145,7 @@ export class CalendarPopup {
 			cls: "at-date-nav-btn at-date-nav-prev",
 			attr: { tabindex: "-1" },
 		});
-		nav.createEl("span", { cls: "at-date-nav-title" });
+		nav.createSpan({ cls: "at-date-nav-title" });
 		const nextBtn = nav.createEl("button", {
 			text: ">",
 			cls: "at-date-nav-btn at-date-nav-next",
@@ -158,7 +159,7 @@ export class CalendarPopup {
 		const weekdayRow = calendarSection.createDiv({ cls: "at-date-weekdays" });
 		const weekdays = t("weekdays").split("");
 		for (const day of weekdays) {
-			weekdayRow.createEl("span", { text: day, cls: "at-date-weekday" });
+			weekdayRow.createSpan({ text: day, cls: "at-date-weekday" });
 		}
 
 		// Calendar grid (42 cells)
@@ -185,7 +186,7 @@ export class CalendarPopup {
 		const formatArea = controlsSection.createDiv({ cls: "at-date-formats" });
 		const formats = this.plugin.settings.favoriteFormats.slice(0, 4);
 		if (formats.length === 0) {
-			const emptyMsg = formatArea.createEl("span", {
+			const emptyMsg = formatArea.createSpan({
 				text: t("noFavoriteFormats"),
 				cls: "at-date-format-empty",
 			});
@@ -222,7 +223,7 @@ export class CalendarPopup {
 			cls: "at-date-confirm-btn",
 			attr: { tabindex: "-1" },
 		});
-		confirmArea.createEl("span", {
+		confirmArea.createSpan({
 			text: t("orPressEnter"),
 			cls: "at-date-confirm-hint",
 		});

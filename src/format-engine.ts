@@ -89,19 +89,22 @@ export function formatDate(
 	const month = date.getMonth() + 1;
 	const day = date.getDate();
 	const shortYear = year % 100;
+	const pad2 = (n: number): string => (n < 10 ? `0${n}` : `${n}`);
+	const monthName = MONTH_NAMES[month - 1] ?? "";
+	const monthNameShort = MONTH_NAMES_SHORT[month - 1] ?? "";
 
 	let formatted = template.dateFormat.replace(
 		/YYYY|YY|MMMM|MMM|MM|M|DD|D/g,
-		(match) => {
+		(match): string => {
 			switch (match) {
-				case "YYYY": return String(year);
-				case "YY": return String(shortYear).padStart(2, "0");
-				case "MMMM": return MONTH_NAMES[month - 1]!;
-				case "MMM": return MONTH_NAMES_SHORT[month - 1]!;
-				case "MM": return String(month).padStart(2, "0");
-				case "M": return String(month);
-				case "DD": return String(day).padStart(2, "0");
-				case "D": return String(day);
+				case "YYYY": return `${year}`;
+				case "YY": return pad2(shortYear);
+				case "MMMM": return monthName;
+				case "MMM": return monthNameShort;
+				case "MM": return pad2(month);
+				case "M": return `${month}`;
+				case "DD": return pad2(day);
+				case "D": return `${day}`;
 				default: return match;
 			}
 		}

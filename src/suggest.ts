@@ -70,14 +70,14 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 		if (this.isComposing) return null;
 
 		const trigger = this.plugin.settings.triggerChar;
-		const line = editor.getLine(cursor.line);
-		const beforeCursor = line.slice(0, cursor.ch);
+		const line: string = editor.getLine(cursor.line);
+		const beforeCursor: string = line.slice(0, cursor.ch);
 		const triggerIndex = beforeCursor.lastIndexOf(trigger);
 
 		if (triggerIndex === -1) return null;
 
-		const rawQuery = beforeCursor.slice(triggerIndex + trigger.length);
-		const query = rawQuery.trimStart();
+		const rawQuery: string = beforeCursor.slice(triggerIndex + trigger.length);
+		const query: string = rawQuery.replace(/^\s+/, "");
 
 		if (!this.shouldKeepPopupForQuery(query)) {
 			this.closePopup();
@@ -90,7 +90,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 		}
 
 		// Adjust end position to consume trailing whitespace for clean replacement
-		const trailingSpaces = rawQuery.length - rawQuery.trimEnd().length;
+		const trailingSpaces = rawQuery.length - rawQuery.replace(/\s+$/, "").length;
 		const end: EditorPosition = { line: cursor.line, ch: cursor.ch + trailingSpaces };
 		const start: EditorPosition = { line: cursor.line, ch: triggerIndex };
 
@@ -228,9 +228,10 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 	}
 
 	private shouldKeepPopupForQuery(query: string): boolean {
-		const trimmed = query.trimStart();
+		const trimmed: string = query.replace(/^\s+/, "");
 		if (trimmed.length === 0) return true;
-		if (trimmed.startsWith("+") || trimmed.startsWith("-")) {
+		const first = trimmed.charAt(0);
+		if (first === "+" || first === "-") {
 			return isRelativeDateInput(trimmed);
 		}
 		return trimmed.length < 3;
