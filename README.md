@@ -28,7 +28,7 @@ Quickly insert dates in Obsidian by typing `@` (or your custom trigger character
 ### Settings Panel
 
 ![Settings Panel](docs/images/demo-settings-panel.gif)
-<img width="1312" height="1278" alt="ScreenShot_2026-09-24_191103_562" src="https://github.com/user-attachments/assets/a82966ea-8296-4f19-af16-3767c56de899" />
+![](docs/images/ScreenShot_2026-09-24_191103_562.png)
 
 ## Installation
 
