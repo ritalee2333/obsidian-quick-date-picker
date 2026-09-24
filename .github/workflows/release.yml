@@ -47,7 +47,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${GITHUB_REF#refs/tags/}"
+          if [ ! -f RELEASE_NOTES.md ]; then
+            echo "RELEASE_NOTES.md is required for a public release" >&2
+            exit 1
+          fi
+          # Use curated notes only — never --generate-notes for the public page.
           gh release create "$tag" \
             --title="$tag" \
-            --generate-notes \
+            --notes-file RELEASE_NOTES.md \
             main.js manifest.json styles.css
