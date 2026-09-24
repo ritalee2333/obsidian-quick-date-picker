@@ -28,6 +28,7 @@
 ### 设置页面
 
 ![设置页面](docs/images/demo-settings-panel.gif)
+<img width="1294" height="1286" alt="ScreenShot_2026-09-24_190601_674" src="https://github.com/user-attachments/assets/0c40ad8f-62e1-4ec7-b8d7-181408935606" />
 
 ## 安装
 
