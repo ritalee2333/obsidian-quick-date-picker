@@ -3,9 +3,9 @@ import { AtDatePickerSettings, DEFAULT_SETTINGS } from "./types";
 import { AtDateSettingTab } from "./settings";
 import { AtDateEditorSuggest } from "./suggest";
 import { CalendarPopup } from "./calendar-popup";
-import { formatDate } from "./format-engine";
+import { formatDate, formatOptionsFromSettings } from "./format-engine";
 import { isRelativeDateInput, parseRelativeDate } from "./relative-date";
-import { tf, detectAndSetLocale } from "./i18n";
+import { tf, detectAndSetLocale, syncWeekdayDefaultsForLocale } from "./i18n";
 
 /** Popout-window compatible document reference */
 const DOC: Document = typeof activeDocument !== "undefined" ? activeDocument : window.document;
@@ -40,6 +40,12 @@ export default class AtDatePickerPlugin extends Plugin {
 				? (raw as Partial<AtDatePickerSettings>)
 				: null;
 		this.settings = JSON.parse(JSON.stringify({ ...DEFAULT_SETTINGS, ...(data || {}) })) as AtDatePickerSettings;
+		if (this.settings.weekdayLocale === undefined) {
+			this.settings.weekdayLocale = null;
+		}
+		if (syncWeekdayDefaultsForLocale(this.settings)) {
+			await this.saveSettings();
+		}
 	}
 
 	async saveSettings() {
@@ -82,7 +88,7 @@ export default class AtDatePickerPlugin extends Plugin {
 			if (relative) {
 				const template = this.settings.lastUsedFormat ??
 					this.settings.defaultFormat;
-				const dateText = formatDate(relative.date, template);
+				const dateText = formatDate(relative.date, template, formatOptionsFromSettings(this.settings));
 				const newText = text.slice(0, triggerIndex) + dateText + text.slice(cursorPos);
 				target.textContent = newText;
 				this.setTitleCursor(target, triggerIndex + dateText.length);
@@ -102,7 +108,7 @@ export default class AtDatePickerPlugin extends Plugin {
 			// Create and show popup
 			this.titlePopup = new CalendarPopup(this);
 			this.titlePopup.onSelect = (date, format) => {
-				const dateText = formatDate(date, format);
+				const dateText = formatDate(date, format, formatOptionsFromSettings(this.settings));
 				const newText = text.slice(0, triggerIndex) + dateText + text.slice(cursorPos);
 				target.textContent = newText;
 

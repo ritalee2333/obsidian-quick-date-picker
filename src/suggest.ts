@@ -9,7 +9,7 @@ import {
 } from "obsidian";
 import AtDatePickerPlugin from "./main";
 import { isRelativeDateInput, parseRelativeDate } from "./relative-date";
-import { formatDate } from "./format-engine";
+import { formatDate, formatOptionsFromSettings } from "./format-engine";
 import { CalendarPopup } from "./calendar-popup";
 
 /** Popout-window compatible document reference */
@@ -111,7 +111,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 		if (relative) {
 			const template = this.plugin.settings.lastUsedFormat ??
 				this.plugin.settings.defaultFormat;
-			const text = formatDate(relative.date, template);
+			const text = formatDate(relative.date, template, formatOptionsFromSettings(this.plugin.settings));
 			context.editor.replaceRange(text, context.start, context.end);
 			context.editor.setCursor({
 				line: context.start.line,
@@ -126,7 +126,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 		// Show calendar popup
 		this.popup = new CalendarPopup(this.plugin);
 		this.popup.onSelect = (date, format) => {
-			const text = formatDate(date, format);
+			const text = formatDate(date, format, formatOptionsFromSettings(this.plugin.settings));
 			context.editor.replaceRange(text, context.start, context.end);
 			context.editor.setCursor({
 				line: context.start.line,
@@ -207,7 +207,7 @@ export class AtDateEditorSuggest extends EditorSuggest<string> {
 
 		const template = this.plugin.settings.lastUsedFormat ??
 			this.plugin.settings.defaultFormat;
-		const text = formatDate(relative.date, template);
+		const text = formatDate(relative.date, template, formatOptionsFromSettings(this.plugin.settings));
 		const start = { line: cursor.line, ch: triggerIndex };
 		const insertedEnd = { line: cursor.line, ch: triggerIndex + text.length };
 		editor.replaceRange(

@@ -1,8 +1,8 @@
 import { App, PluginSettingTab, Setting, Notice, TextComponent } from "obsidian";
 import AtDatePickerPlugin from "./main";
 import { FormatTemplate } from "./types";
-import { validateTemplate, formatDate } from "./format-engine";
-import { t } from "./i18n";
+import { validateTemplate, formatDate, formatOptionsFromSettings } from "./format-engine";
+import { t, syncWeekdayDefaultsForLocale } from "./i18n";
 
 const RECOMMENDED_FORMATS = [
 	"YYYY-MM-DD",
@@ -25,6 +25,10 @@ export class AtDateSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
+		if (syncWeekdayDefaultsForLocale(this.plugin.settings)) {
+			void this.plugin.saveSettings();
+		}
+
 		const { containerEl } = this;
 		containerEl.empty();
 		new Setting(containerEl).setName(t("settingTitle")).setHeading();
@@ -58,6 +62,54 @@ export class AtDateSettingTab extends PluginSettingTab {
 						void this.plugin.saveSettings();
 					})
 			);
+
+		// Include weekday
+		new Setting(containerEl)
+			.setName(t("includeWeekday"))
+			.setDesc(t("includeWeekdayDesc"))
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.includeWeekday)
+					.onChange((value) => {
+						this.plugin.settings.includeWeekday = value;
+						void this.plugin.saveSettings();
+						this.display();
+					})
+			);
+
+		if (this.plugin.settings.includeWeekday) {
+			new Setting(containerEl)
+				.setName(t("weekdayFormat"))
+				.setDesc(t("weekdayFormatDesc"))
+				.addDropdown((dropdown) =>
+					dropdown
+						.addOption("chinese", t("weekdayChinese"))
+						.addOption("short", t("weekdayShort"))
+						.addOption("english", t("weekdayEnglish"))
+						.addOption("englishShort", t("weekdayEnglishShort"))
+						.setValue(this.plugin.settings.weekdayFormat)
+						.onChange((value) => {
+							this.plugin.settings.weekdayFormat = value as import("./types").WeekdayFormat;
+							void this.plugin.saveSettings();
+							this.display();
+						})
+				);
+
+			new Setting(containerEl)
+				.setName(t("weekdayArrangement"))
+				.setDesc(t("weekdayArrangementDesc"))
+				.addText((text) =>
+					text
+						.setPlaceholder(t("weekdayArrangementPlaceholder"))
+						.setValue(this.plugin.settings.weekdayArrangement)
+						.onChange((value) => {
+							this.plugin.settings.weekdayArrangement =
+								value || t("weekdayArrangementDefault");
+							void this.plugin.saveSettings();
+							this.display();
+						})
+				);
+		}
 
 		new Setting(containerEl).setName(t("defaultFormat")).setHeading();
 		this.renderFormatEditor(containerEl, this.plugin.settings.defaultFormat, true);
@@ -96,7 +148,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 		const updatePreview = () => {
 			const today = new Date();
 			today.setHours(0, 0, 0, 0);
-			const text = formatDate(today, format);
+			const text = formatDate(today, format, formatOptionsFromSettings(this.plugin.settings));
 			previewValue.textContent = text;
 			if (!validateTemplate(format.dateFormat)) {
 				previewValue.addClass("is-invalid");
@@ -212,6 +264,21 @@ export class AtDateSettingTab extends PluginSettingTab {
 				this.display();
 			});
 
+			const favoritePreview = formatEl.createDiv({ cls: "atd-format-preview" });
+			favoritePreview.createEl("span", { text: t("preview") });
+			const favoritePreviewValue = favoritePreview.createEl("span", {
+				cls: "atd-format-preview-value",
+			});
+			const updateFavoritePreview = () => {
+				const today = new Date();
+				today.setHours(0, 0, 0, 0);
+				favoritePreviewValue.textContent = formatDate(
+					today,
+					format,
+					formatOptionsFromSettings(this.plugin.settings)
+				);
+			};
+
 			// Inline editor
 			new Setting(formatEl)
 				.setName(t("formatName"))
@@ -229,6 +296,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 					this.attachFormatDropdown(text, format.dateFormat, (value) => {
 						format.dateFormat = value;
 						void this.plugin.saveSettings();
+						updateFavoritePreview();
 					})
 				);
 
@@ -238,6 +306,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 					text.setValue(format.prefix).onChange((value) => {
 						format.prefix = value;
 						void this.plugin.saveSettings();
+						updateFavoritePreview();
 					})
 				);
 
@@ -247,8 +316,11 @@ export class AtDateSettingTab extends PluginSettingTab {
 					text.setValue(format.suffix).onChange((value) => {
 						format.suffix = value;
 						void this.plugin.saveSettings();
+						updateFavoritePreview();
 					})
 				);
+
+			updateFavoritePreview();
 		}
 	}
 

@@ -1,5 +1,5 @@
 import { FormatTemplate } from "./types";
-import { formatDate } from "./format-engine";
+import { formatDate, formatOptionsFromSettings } from "./format-engine";
 import AtDatePickerPlugin from "./main";
 import { t, tf } from "./i18n";
 
@@ -295,7 +295,7 @@ export class CalendarPopup {
 
 	private updatePreview(): void {
 		if (!this.previewEl) return;
-		const text = formatDate(this.selectedDate, this.selectedFormat);
+		const text = formatDate(this.selectedDate, this.selectedFormat, formatOptionsFromSettings(this.plugin.settings));
 		this.previewEl.textContent = tf("previewLabel", text);
 	}
 

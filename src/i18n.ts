@@ -1,3 +1,5 @@
+import type { WeekdayFormat } from "./types";
+
 export type Locale = "zh" | "en";
 
 const EN_MONTH_NAMES = [
@@ -46,6 +48,18 @@ const dicts: Record<Locale, Record<string, TranslationValue>> = {
 		triggerCharEmpty: "触发字符不能为空",
 		rememberLastFormat: "记住上次使用的格式",
 		rememberLastFormatDesc: "开启后，弹窗会自动选中你上次使用的格式",
+		includeWeekday: "输出星期",
+		includeWeekdayDesc: "开启后，在日期中附加星期信息",
+		weekdayFormat: "星期格式",
+		weekdayFormatDesc: "中文＝星期四；中文简写＝周四；英文＝Thursday；英文简写＝Thu",
+		weekdayChinese: "中文（星期四）",
+		weekdayShort: "中文简写（周四）",
+		weekdayEnglish: "英文（Thursday）",
+		weekdayEnglishShort: "英文简写（Thu）",
+		weekdayArrangement: "日期与星期排列",
+		weekdayArrangementDesc: "用「日期」「星期」或 {date} {weekday} 作占位符，例如：日期 星期、日期-星期、日期（星期）",
+		weekdayArrangementPlaceholder: "日期 星期",
+		weekdayArrangementDefault: "日期 星期",
 		defaultFormat: "默认格式",
 		favoriteFormats: "常用格式列表",
 		addFormat: "+ 添加常用格式",
@@ -69,7 +83,7 @@ const dicts: Record<Locale, Record<string, TranslationValue>> = {
 		navTitle: (year: number, month: number) => `${year}年${month}月`,
 		previewLabel: (text: string) => `预览: ${text}`,
 		invalidDate: "无效日期",
-		saveSettingsFailed: (msg: string) => `保存设置失败: ${msg}`,
+		saveSettingsFailed: (msg: number | string) => `保存设置失败: ${msg}`,
 	},
 	en: {
 		settingTitle: "Quick Date Picker Settings",
@@ -78,6 +92,18 @@ const dicts: Record<Locale, Record<string, TranslationValue>> = {
 		triggerCharEmpty: "Trigger character cannot be empty",
 		rememberLastFormat: "Remember Last Format",
 		rememberLastFormatDesc: "When enabled, the popup auto-selects the format you last used",
+		includeWeekday: "Include weekday",
+		includeWeekdayDesc: "Append weekday text to the formatted date",
+		weekdayFormat: "Weekday format",
+		weekdayFormatDesc: "Chinese＝星期四；Chinese short＝周四；English＝Thursday；English short＝Thu",
+		weekdayChinese: "Chinese (星期四)",
+		weekdayShort: "Chinese short (周四)",
+		weekdayEnglish: "English (Thursday)",
+		weekdayEnglishShort: "English short (Thu)",
+		weekdayArrangement: "Date & weekday arrangement",
+		weekdayArrangementDesc: "Use {date} and {weekday} as placeholders, e.g. {date} {weekday}, {date}-{weekday}, {date} ({weekday})",
+		weekdayArrangementPlaceholder: "{date} {weekday}",
+		weekdayArrangementDefault: "{date} {weekday}",
 		defaultFormat: "Default Format",
 		favoriteFormats: "Favorite Formats",
 		addFormat: "+ Add Favorite Format",
@@ -101,7 +127,7 @@ const dicts: Record<Locale, Record<string, TranslationValue>> = {
 		navTitle: (year: number, month: number) => `${EN_MONTH_NAMES[month - 1]} ${year}`,
 		previewLabel: (text: string) => `Preview: ${text}`,
 		invalidDate: "Invalid Date",
-		saveSettingsFailed: (msg: string) => `Failed to save settings: ${msg}`,
+		saveSettingsFailed: (msg: number | string) => `Failed to save settings: ${msg}`,
 	},
 };
 
@@ -121,4 +147,78 @@ export function tf(key: string, ...args: unknown[]): string {
 	const fallback = dicts.en[key];
 	if (typeof fallback === "function") return fallback(...args);
 	return key;
+}
+
+export function getLocaleWeekdayDefaults(locale: Locale = getLocale()): {
+	weekdayFormat: WeekdayFormat;
+	weekdayArrangement: string;
+} {
+	if (locale === "zh") {
+		return { weekdayFormat: "chinese", weekdayArrangement: "日期 星期" };
+	}
+	return { weekdayFormat: "english", weekdayArrangement: "{date} {weekday}" };
+}
+
+export function mapWeekdayFormatToLocale(
+	format: WeekdayFormat,
+	locale: Locale
+): WeekdayFormat {
+	if (locale === "zh") {
+		if (format === "english") return "chinese";
+		if (format === "englishShort") return "short";
+		return format;
+	}
+	if (format === "chinese") return "english";
+	if (format === "short") return "englishShort";
+	return format;
+}
+
+const STOCK_ARRANGEMENTS = new Set(["日期 星期", "{date} {weekday}", ""]);
+
+/** Align weekday defaults when Obsidian UI language changes. */
+export function syncWeekdayDefaultsForLocale(settings: {
+	weekdayFormat: WeekdayFormat;
+	weekdayArrangement: string;
+	weekdayLocale: Locale | null;
+}): boolean {
+	const locale = getLocale();
+	if (settings.weekdayLocale === locale) return false;
+
+	const defaults = getLocaleWeekdayDefaults(locale);
+	const prev = settings.weekdayLocale;
+	const zhDefaults = getLocaleWeekdayDefaults("zh");
+	const enDefaults = getLocaleWeekdayDefaults("en");
+	const arrangement = (settings.weekdayArrangement ?? "").trim();
+
+	if (prev == null) {
+		if (locale === "en") {
+			if (
+				settings.weekdayFormat === zhDefaults.weekdayFormat ||
+				settings.weekdayFormat === "short"
+			) {
+				settings.weekdayFormat = mapWeekdayFormatToLocale(settings.weekdayFormat, "en");
+			}
+			if (arrangement === zhDefaults.weekdayArrangement || arrangement === "") {
+				settings.weekdayArrangement = enDefaults.weekdayArrangement;
+			}
+		} else {
+			if (
+				settings.weekdayFormat === enDefaults.weekdayFormat ||
+				settings.weekdayFormat === "englishShort"
+			) {
+				settings.weekdayFormat = mapWeekdayFormatToLocale(settings.weekdayFormat, "zh");
+			}
+			if (arrangement === enDefaults.weekdayArrangement || arrangement === "") {
+				settings.weekdayArrangement = zhDefaults.weekdayArrangement;
+			}
+		}
+	} else {
+		settings.weekdayFormat = mapWeekdayFormatToLocale(settings.weekdayFormat, locale);
+		if (STOCK_ARRANGEMENTS.has(arrangement)) {
+			settings.weekdayArrangement = defaults.weekdayArrangement;
+		}
+	}
+
+	settings.weekdayLocale = locale;
+	return true;
 }
