@@ -89,9 +89,14 @@ export class AtDateSettingTab extends PluginSettingTab {
 						name: t("defaultFormat"),
 						searchable: false,
 						render: (setting) => {
-							setting.settingEl.empty();
+							// settingEl is a horizontal .setting-item; nest editors in a
+							// block-level host so nested Setting rows stack vertically.
+							const host = this.replaceSettingRowWithHost(
+								setting,
+								"atd-format-editor-host"
+							);
 							this.renderFormatEditor(
-								setting.settingEl,
+								host,
 								this.plugin.settings.defaultFormat,
 								true
 							);
@@ -107,8 +112,11 @@ export class AtDateSettingTab extends PluginSettingTab {
 						name: t("favoriteFormats"),
 						searchable: false,
 						render: (setting) => {
-							setting.settingEl.empty();
-							const list = setting.settingEl.createDiv({ cls: "atd-format-list" });
+							const host = this.replaceSettingRowWithHost(
+								setting,
+								"atd-format-list-host"
+							);
+							const list = host.createDiv({ cls: "atd-format-list" });
 							this.renderFormatList(list);
 						},
 					},
@@ -128,6 +136,19 @@ export class AtDateSettingTab extends PluginSettingTab {
 				],
 			},
 		];
+	}
+
+	/**
+	 * Declarative render() hands us a flex .setting-item row. Custom multi-row
+	 * editors must live in a sibling block host, or nested Setting rows lay out
+	 * horizontally and crush labels.
+	 */
+	private replaceSettingRowWithHost(setting: Setting, cls: string): HTMLElement {
+		const row = setting.settingEl;
+		const parent = row.parentElement ?? this.containerEl;
+		const host = parent.createDiv({ cls });
+		row.remove();
+		return host;
 	}
 
 	private renderFormatEditor(

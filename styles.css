@@ -258,7 +258,22 @@
 	color: var(--text-muted);
 }
 
-/* Settings Panel */
+/* Settings Panel — block hosts replace declarative setting-item rows */
+.atd-format-editor-host,
+.atd-format-list-host {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0 0 12px;
+}
+
+.atd-format-editor-host > .setting-item,
+.atd-format-item > .setting-item {
+	width: 100%;
+	box-sizing: border-box;
+}
+
 .atd-format-preview {
 	padding: 8px 0;
 	font-size: 13px;
@@ -277,13 +292,18 @@
 }
 
 .atd-format-list {
-	margin: 12px 0;
+	display: block;
+	width: 100%;
+	margin: 0;
 }
 
 .atd-format-item {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--atd-border-radius);
-	padding: 8px;
+	padding: 8px 12px;
 	margin-bottom: 8px;
 }
 
