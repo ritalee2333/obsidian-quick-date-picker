@@ -9,9 +9,11 @@ Quickly insert dates in Obsidian by typing `@` (or your custom trigger character
 - **Mini Calendar Popup**: A calendar pops up in real-time after typing the trigger character. Supports both mouse selection and keyboard navigation.
 - **Relative Date Shortcuts**: Supports quick syntax like `@+3d`, `-1w`, `2m` without opening the calendar.
 - **Multiple Output Formats**: Built-in formats (Standard, Wiki Link, Chinese, Compact, etc.) with customizable prefix/suffix.
-- **Instant Format Switching**: Frequently-used format buttons appear at the bottom of the mini calendar popup, allowing quick format switching without opening Settings.
+- **Weekday Output**: Optionally append the day of week after the date — Chinese (`星期四`), Chinese short (`周四`), English (`Thursday`), or English short (`Thu`).
+- **Custom Date–Weekday Layout**: Arrange date and weekday freely with placeholders, e.g. `日期 星期`, `日期（星期）`, or `{date} ({weekday})`.
+- **Instant Format Switching**: Frequently-used format buttons appear in the mini calendar popup, allowing quick format switching without opening Settings.
 - **Title Bar Support**: Use the date picker in note titles (file names) as well.
-- **Multi-language UI**: Setting panel and calendar popup automatically adapt to Obsidian's interface language (Chinese / English).
+- **Multi-language UI**: Settings and calendar follow Obsidian’s interface language (Chinese locales → Simplified Chinese UI; others → English). Weekday-related defaults also switch with the language.
 
 ## Demo
 
@@ -76,8 +78,11 @@ Go to **Settings → Community Plugins → Quick Date Picker** to configure:
 
 - **Trigger Character**: Customize the character that summons the calendar (default `@`)
 - **Remember Last Format**: When enabled, the popup auto-selects the format you last used
-- **Default Format**: Set the default date output format
-- **Favorite Formats**: Add, remove, and reorder frequently-used format templates
+- **Include Weekday**: When enabled, append weekday text after the formatted date
+- **Weekday Format**: Choose Chinese / Chinese short / English / English short
+- **Date & Weekday Arrangement**: Control how date and weekday are combined (see below)
+- **Default Format**: Set the default date output format (with live red preview)
+- **Favorite Formats**: Add, remove, and reorder frequently-used format templates (each with its own preview)
 
 ### Format Template Syntax
 
@@ -95,6 +100,19 @@ Supported date tokens:
 | `D`    | One-digit day | 23 |
 
 Prefix/Suffix example: `prefix [[` + `YYYY-MM-DD` + `suffix ]]` = `[[2026-05-23]]`
+
+### Weekday Arrangement
+
+When **Include Weekday** is on, use these placeholders in the arrangement field:
+
+| Pattern | Example output |
+|---------|----------------|
+| `日期 星期` or `{date} {weekday}` | `2026-09-24 周四` |
+| `日期-星期` or `{date}-{weekday}` | `2026-09-24-周四` |
+| `日期（星期）` or `{date}（{weekday}）` | `2026-09-24（周四）` |
+| `{date} ({weekday})` | `2026-09-24 (Thu)` |
+
+`日期` / `{date}` = formatted date; `星期` / `{weekday}` = weekday text in the format you selected.
 
 ## Compatibility
 
