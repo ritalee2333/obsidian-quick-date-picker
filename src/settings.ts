@@ -89,12 +89,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 						name: t("defaultFormat"),
 						searchable: false,
 						render: (setting) => {
-							// settingEl is a horizontal .setting-item; nest editors in a
-							// block-level host so nested Setting rows stack vertically.
-							const host = this.replaceSettingRowWithHost(
-								setting,
-								"atd-format-editor-host"
-							);
+							const host = this.prepareBlockHost(setting, "atd-format-editor-host");
 							this.renderFormatEditor(
 								host,
 								this.plugin.settings.defaultFormat,
@@ -112,25 +107,28 @@ export class AtDateSettingTab extends PluginSettingTab {
 						name: t("favoriteFormats"),
 						searchable: false,
 						render: (setting) => {
-							const host = this.replaceSettingRowWithHost(
-								setting,
-								"atd-format-list-host"
-							);
+							const host = this.prepareBlockHost(setting, "atd-format-list-host");
 							const list = host.createDiv({ cls: "atd-format-list" });
 							this.renderFormatList(list);
 						},
 					},
 					{
 						name: t("addFormat"),
-						action: () => {
-							this.plugin.settings.favoriteFormats.push({
-								name: t("newFormat"),
-								dateFormat: "YYYY-MM-DD",
-								prefix: "",
-								suffix: "",
-							});
-							void this.plugin.saveSettings();
-							this.update();
+						searchable: false,
+						render: (setting) => {
+							setting.clear();
+							setting.addButton((btn) =>
+								btn.setButtonText(t("addFormat")).onClick(() => {
+									this.plugin.settings.favoriteFormats.push({
+										name: t("newFormat"),
+										dateFormat: "YYYY-MM-DD",
+										prefix: "",
+										suffix: "",
+									});
+									void this.plugin.saveSettings();
+									this.update();
+								})
+							);
 						},
 					},
 				],
@@ -139,15 +137,15 @@ export class AtDateSettingTab extends PluginSettingTab {
 	}
 
 	/**
-	 * Declarative render() hands us a flex .setting-item row. Custom multi-row
-	 * editors must live in a sibling block host, or nested Setting rows lay out
-	 * horizontally and crush labels.
+	 * Keep the framework-owned setting row in the DOM (removing it breaks
+	 * re-renders / actions), but restyle it as a vertical block host so nested
+	 * Setting rows are not crushed into a horizontal flex line.
 	 */
-	private replaceSettingRowWithHost(setting: Setting, cls: string): HTMLElement {
-		const row = setting.settingEl;
-		const parent = row.parentElement ?? this.containerEl;
-		const host = parent.createDiv({ cls });
-		row.remove();
+	private prepareBlockHost(setting: Setting, cls: string): HTMLElement {
+		const host = setting.settingEl;
+		host.empty();
+		host.addClass("atd-setting-block-host");
+		host.addClass(cls);
 		return host;
 	}
 

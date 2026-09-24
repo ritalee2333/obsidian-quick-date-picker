@@ -1,11 +1,13 @@
-## What's New in 1.2.3
+## What's New in 1.2.4
 
 ### Fixed
-- Settings layout: default format and favorite format editors no longer crush into a single horizontal row under the declarative settings API
+- Settings: restore default/favorite format editors (content no longer disappears)
+- Settings: "Add favorite format" button works again under the declarative settings API
 
 ---
 
-## 1.2.3 更新内容
+## 1.2.4 更新内容
 
 ### 修复
-- 设置页布局：声明式设置下，「默认格式」与「常用格式」不再被挤成一行
+- 设置页：恢复默认格式 / 常用格式编辑区（内容不再消失）
+- 设置页：「添加常用格式」在声明式设置下可再次点击生效
