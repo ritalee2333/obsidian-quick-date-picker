@@ -28,7 +28,6 @@
 ### 设置页面
 
 ![设置页面](docs/images/demo-settings-panel.gif)
-<img width="653" height="500" alt="ScreenShot_2026-09-24_122831_087" src="https://github.com/user-attachments/assets/fdbc171d-8559-4e85-8656-e878ee25fe41" />
 
 ## 安装
 
@@ -119,7 +118,7 @@
 
 - Obsidian 桌面端：✅ 支持
 - Obsidian 移动端：✅ 支持
-- 最低 Obsidian 版本：v0.15.0
+- 最低 Obsidian 版本：v1.13.0
 
 ## 开发
 

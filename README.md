@@ -28,8 +28,6 @@ Quickly insert dates in Obsidian by typing `@` (or your custom trigger character
 ### Settings Panel
 
 ![Settings Panel](docs/images/demo-settings-panel.gif)
-<img width="649" height="502" alt="ScreenShot_2026-09-24_122926_793" src="https://github.com/user-attachments/assets/11c65b2f-c18d-4d7a-91b0-4cc75dc48dac" />
-
 
 ## Installation
 
@@ -120,7 +118,7 @@ When **Include Weekday** is on, use these placeholders in the arrangement field:
 
 - Obsidian Desktop: supported
 - Obsidian Mobile: supported
-- Minimum Obsidian version: v0.15.0
+- Minimum Obsidian version: v1.13.0
 
 ## Development
 
