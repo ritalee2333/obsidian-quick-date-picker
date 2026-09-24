@@ -113,9 +113,15 @@ export function formatDate(
 	if (options?.includeWeekday) {
 		const weekday = formatWeekday(
 			date,
-			options.weekdayFormat ?? (getLocale() === "zh" ? "chinese" : "english")
+			template.weekdayFormat ??
+				options.weekdayFormat ??
+				(getLocale() === "zh" ? "chinese" : "english")
 		);
-		formatted = arrangeDateWeekday(formatted, weekday, options.weekdayArrangement);
+		formatted = arrangeDateWeekday(
+			formatted,
+			weekday,
+			template.weekdayArrangement ?? options.weekdayArrangement
+		);
 	}
 
 	return template.prefix + formatted + template.suffix;

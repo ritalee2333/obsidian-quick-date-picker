@@ -3,6 +3,10 @@ export interface FormatTemplate {
 	dateFormat: string;
 	prefix: string;
 	suffix: string;
+	/** Per-format weekday style when「输出星期」is on */
+	weekdayFormat?: WeekdayFormat;
+	/** Per-format date/weekday arrangement pattern */
+	weekdayArrangement?: string;
 }
 
 /** 中文＝星期四；中文简写＝周四；英文＝Thursday；英文简写＝Thu */
@@ -16,10 +20,14 @@ export interface AtDatePickerSettings {
 	lastUsedFormat: FormatTemplate | null;
 	/** 是否在输出日期后附加星期信息 */
 	includeWeekday: boolean;
+	/**
+	 * Legacy global weekday style — kept as migration fallback.
+	 * Prefer FormatTemplate.weekdayFormat going forward.
+	 */
 	weekdayFormat: WeekdayFormat;
 	/**
-	 * 日期与星期的排列模板。
-	 * 用「日期」「星期」或 {date}/{weekday} 作占位符
+	 * Legacy global weekday arrangement — kept as migration fallback.
+	 * Prefer FormatTemplate.weekdayArrangement going forward.
 	 */
 	weekdayArrangement: string;
 	/** 星期相关默认值上次对齐的 UI 语言 */
@@ -33,6 +41,8 @@ export const DEFAULT_SETTINGS: AtDatePickerSettings = {
 		dateFormat: "YYYY-MM-DD",
 		prefix: "",
 		suffix: "",
+		weekdayFormat: "chinese",
+		weekdayArrangement: "日期 星期",
 	},
 	favoriteFormats: [
 		{
@@ -40,18 +50,24 @@ export const DEFAULT_SETTINGS: AtDatePickerSettings = {
 			dateFormat: "YYYY-MM-DD",
 			prefix: "[[",
 			suffix: "]]",
+			weekdayFormat: "chinese",
+			weekdayArrangement: "日期 星期",
 		},
 		{
 			name: "Chinese",
 			dateFormat: "YYYY年MM月DD日",
 			prefix: "",
 			suffix: "",
+			weekdayFormat: "chinese",
+			weekdayArrangement: "日期 星期",
 		},
 		{
 			name: "US Date",
 			dateFormat: "MMM D, YYYY",
 			prefix: "",
 			suffix: "",
+			weekdayFormat: "englishShort",
+			weekdayArrangement: "{date} {weekday}",
 		},
 	],
 	rememberLastFormat: true,
@@ -61,3 +77,32 @@ export const DEFAULT_SETTINGS: AtDatePickerSettings = {
 	weekdayArrangement: "日期 星期",
 	weekdayLocale: null,
 };
+
+/** Fill missing per-format weekday fields from legacy global fallbacks. */
+export function ensureFormatWeekdayFields(
+	settings: AtDatePickerSettings
+): boolean {
+	const fallbackFormat = settings.weekdayFormat ?? "chinese";
+	const fallbackArrangement = settings.weekdayArrangement || "日期 星期";
+	let changed = false;
+
+	const ensure = (format: FormatTemplate | null | undefined): void => {
+		if (!format) return;
+		if (!format.weekdayFormat) {
+			format.weekdayFormat = fallbackFormat;
+			changed = true;
+		}
+		if (!format.weekdayArrangement) {
+			format.weekdayArrangement = fallbackArrangement;
+			changed = true;
+		}
+	};
+
+	ensure(settings.defaultFormat);
+	for (const format of settings.favoriteFormats ?? []) {
+		ensure(format);
+	}
+	ensure(settings.lastUsedFormat);
+
+	return changed;
+}

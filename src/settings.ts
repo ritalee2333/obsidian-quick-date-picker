@@ -1,15 +1,17 @@
 import { App, Notice, PluginSettingTab, Setting, SettingDefinitionItem, TextComponent } from "obsidian";
 import AtDatePickerPlugin from "./main";
-import { FormatTemplate } from "./types";
+import { FormatTemplate, WeekdayFormat } from "./types";
 import { validateTemplate, formatDate, formatOptionsFromSettings } from "./format-engine";
-import { t, syncWeekdayDefaultsForLocale } from "./i18n";
+import { t, syncWeekdayDefaultsForLocale, getLocaleWeekdayDefaults } from "./i18n";
 
 function formatsEqual(a: FormatTemplate, b: FormatTemplate): boolean {
 	return (
 		a.name === b.name &&
 		a.dateFormat === b.dateFormat &&
 		a.prefix === b.prefix &&
-		a.suffix === b.suffix
+		a.suffix === b.suffix &&
+		(a.weekdayFormat ?? "") === (b.weekdayFormat ?? "") &&
+		(a.weekdayArrangement ?? "") === (b.weekdayArrangement ?? "")
 	);
 }
 
@@ -19,6 +21,8 @@ function cloneFormat(format: FormatTemplate): FormatTemplate {
 		dateFormat: format.dateFormat,
 		prefix: format.prefix,
 		suffix: format.suffix,
+		weekdayFormat: format.weekdayFormat,
+		weekdayArrangement: format.weekdayArrangement,
 	};
 }
 
@@ -33,6 +37,13 @@ const RECOMMENDED_FORMATS = [
 	"MMM D, YYYY",
 	"MMMM D, YYYY",
 ];
+
+const WEEKDAY_OPTIONS: Record<WeekdayFormat, () => string> = {
+	chinese: () => t("weekdayChinese"),
+	short: () => t("weekdayShort"),
+	english: () => t("weekdayEnglish"),
+	englishShort: () => t("weekdayEnglishShort"),
+};
 
 export class AtDateSettingTab extends PluginSettingTab {
 	plugin: AtDatePickerPlugin;
@@ -75,31 +86,6 @@ export class AtDateSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: t("weekdayFormat"),
-				desc: t("weekdayFormatDesc"),
-				visible: () => this.plugin.settings.includeWeekday,
-				control: {
-					type: "dropdown",
-					key: "weekdayFormat",
-					options: {
-						chinese: t("weekdayChinese"),
-						short: t("weekdayShort"),
-						english: t("weekdayEnglish"),
-						englishShort: t("weekdayEnglishShort"),
-					},
-				},
-			},
-			{
-				name: t("weekdayArrangement"),
-				desc: t("weekdayArrangementDesc"),
-				visible: () => this.plugin.settings.includeWeekday,
-				control: {
-					type: "text",
-					key: "weekdayArrangement",
-					placeholder: t("weekdayArrangementPlaceholder"),
-				},
-			},
-			{
 				type: "group",
 				heading: t("defaultFormat"),
 				items: [
@@ -108,13 +94,21 @@ export class AtDateSettingTab extends PluginSettingTab {
 						searchable: false,
 						render: (setting) => {
 							const host = this.prepareBlockHost(setting, "atd-format-editor-host");
-							// Inner body matches .atd-format-item padding for preview alignment.
+							const help = host.createDiv({ cls: "atd-format-section-help" });
+							help.createDiv({
+								cls: "atd-format-section-help-line",
+								text: t("defaultFormatHelpTokens"),
+							});
+							help.createDiv({
+								cls: "atd-format-section-help-line",
+								text: t("defaultFormatHelpAffix"),
+							});
+							help.createDiv({
+								cls: "atd-format-section-help-line",
+								text: t("defaultFormatHelpWeekday"),
+							});
 							const body = host.createDiv({ cls: "atd-format-editor-body" });
-							this.renderFormatEditor(
-								body,
-								this.plugin.settings.defaultFormat,
-								true
-							);
+							this.renderFormatEditor(body, this.plugin.settings.defaultFormat);
 						},
 					},
 				],
@@ -140,11 +134,18 @@ export class AtDateSettingTab extends PluginSettingTab {
 							setting.clear();
 							setting.addButton((btn) =>
 								btn.setButtonText(t("addFormat")).onClick(() => {
+									const defaults = getLocaleWeekdayDefaults();
 									this.plugin.settings.favoriteFormats.push({
 										name: t("newFormat"),
 										dateFormat: "YYYY-MM-DD",
 										prefix: "",
 										suffix: "",
+										weekdayFormat:
+											this.plugin.settings.weekdayFormat ??
+											defaults.weekdayFormat,
+										weekdayArrangement:
+											this.plugin.settings.weekdayArrangement ||
+											defaults.weekdayArrangement,
 									});
 									void this.plugin.saveSettings();
 									this.update();
@@ -170,11 +171,7 @@ export class AtDateSettingTab extends PluginSettingTab {
 		return host;
 	}
 
-	private renderFormatEditor(
-		container: HTMLElement,
-		format: FormatTemplate,
-		_isDefault: boolean
-	): void {
+	private renderFormatEditor(container: HTMLElement, format: FormatTemplate): void {
 		const previewEl = container.createDiv({ cls: "atd-format-preview" });
 		previewEl.createSpan({ text: t("preview") });
 		const previewValue = previewEl.createSpan({ cls: "atd-format-preview-value" });
@@ -193,7 +190,6 @@ export class AtDateSettingTab extends PluginSettingTab {
 		};
 
 		this.renderFormatFields(container, format, {
-			showDateFormatDesc: true,
 			onPreviewUpdate: updatePreview,
 		});
 
@@ -202,13 +198,13 @@ export class AtDateSettingTab extends PluginSettingTab {
 
 	/**
 	 * Two-column field layout:
-	 * row1 = name | date format, row2 = prefix | suffix
+	 * row1 = name | date format, row2 = prefix | suffix.
+	 * When includeWeekday is on, a weekday dropdown is rendered below the grid.
 	 */
 	private renderFormatFields(
 		container: HTMLElement,
 		format: FormatTemplate,
 		options: {
-			showDateFormatDesc?: boolean;
 			onNameChange?: (value: string) => void;
 			onPreviewUpdate: () => void;
 		}
@@ -226,17 +222,15 @@ export class AtDateSettingTab extends PluginSettingTab {
 				})
 			);
 
-		const dateFormatSetting = new Setting(nameDateRow).setName(t("dateFormat"));
-		if (options.showDateFormatDesc) {
-			dateFormatSetting.setDesc(t("dateFormatDesc"));
-		}
-		dateFormatSetting.addText((text) =>
-			this.attachFormatDropdown(text, format.dateFormat, (value) => {
-				format.dateFormat = value;
-				void this.plugin.saveSettings();
-				options.onPreviewUpdate();
-			})
-		);
+		new Setting(nameDateRow)
+			.setName(t("dateFormat"))
+			.addText((text) =>
+				this.attachFormatDropdown(text, format.dateFormat, (value) => {
+					format.dateFormat = value;
+					void this.plugin.saveSettings();
+					options.onPreviewUpdate();
+				})
+			);
 
 		const prefixSuffixRow = fields.createDiv({ cls: "atd-format-fields-row" });
 
@@ -259,6 +253,47 @@ export class AtDateSettingTab extends PluginSettingTab {
 					options.onPreviewUpdate();
 				})
 			);
+
+		if (this.plugin.settings.includeWeekday) {
+			const defaults = getLocaleWeekdayDefaults();
+			if (!format.weekdayFormat) {
+				format.weekdayFormat =
+					this.plugin.settings.weekdayFormat ?? defaults.weekdayFormat;
+			}
+			if (!format.weekdayArrangement) {
+				format.weekdayArrangement =
+					this.plugin.settings.weekdayArrangement || defaults.weekdayArrangement;
+			}
+
+			const weekdayWrap = container.createDiv({ cls: "atd-format-weekday" });
+
+			new Setting(weekdayWrap)
+				.setName(t("weekdayFormat"))
+				.addDropdown((dropdown) => {
+					for (const [value, label] of Object.entries(WEEKDAY_OPTIONS)) {
+						dropdown.addOption(value, label());
+					}
+					dropdown.setValue(format.weekdayFormat ?? "chinese");
+					dropdown.onChange((value) => {
+						format.weekdayFormat = value as WeekdayFormat;
+						void this.plugin.saveSettings();
+						options.onPreviewUpdate();
+					});
+				});
+
+			new Setting(weekdayWrap)
+				.setName(t("weekdayArrangement"))
+				.addText((text) =>
+					text
+						.setPlaceholder(t("weekdayArrangementPlaceholder"))
+						.setValue(format.weekdayArrangement ?? "")
+						.onChange((value) => {
+							format.weekdayArrangement = value;
+							void this.plugin.saveSettings();
+							options.onPreviewUpdate();
+						})
+				);
+		}
 	}
 
 	private renderFormatList(container: HTMLElement): void {

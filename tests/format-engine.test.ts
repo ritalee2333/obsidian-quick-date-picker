@@ -121,6 +121,29 @@ describe("formatDate", () => {
 		expect(result).toBe("2026-05-22 星期五");
 	});
 
+	it("prefers per-format weekdayFormat over options", () => {
+		const template = makeTemplate("MMM D, YYYY");
+		template.weekdayFormat = "englishShort";
+		const result = formatDate(fixedDate, template, {
+			includeWeekday: true,
+			weekdayFormat: "chinese",
+			weekdayArrangement: "{date} {weekday}",
+		});
+		expect(result).toBe("May 22, 2026 Fri");
+	});
+
+	it("prefers per-format weekdayArrangement over options", () => {
+		const template = makeTemplate("YYYY-MM-DD");
+		template.weekdayFormat = "chinese";
+		template.weekdayArrangement = "日期（星期）";
+		const result = formatDate(fixedDate, template, {
+			includeWeekday: true,
+			weekdayFormat: "english",
+			weekdayArrangement: "{date} {weekday}",
+		});
+		expect(result).toBe("2026-05-22（星期五）");
+	});
+
 	it("appends English short weekday with custom arrangement", () => {
 		const result = formatDate(fixedDate, makeTemplate("YYYY-MM-DD"), {
 			includeWeekday: true,

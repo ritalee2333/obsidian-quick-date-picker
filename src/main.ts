@@ -1,5 +1,5 @@
 import { Plugin, Notice } from "obsidian";
-import { AtDatePickerSettings, DEFAULT_SETTINGS } from "./types";
+import { AtDatePickerSettings, DEFAULT_SETTINGS, ensureFormatWeekdayFields } from "./types";
 import { AtDateSettingTab } from "./settings";
 import { AtDateEditorSuggest } from "./suggest";
 import { CalendarPopup } from "./calendar-popup";
@@ -43,7 +43,9 @@ export default class AtDatePickerPlugin extends Plugin {
 		if (this.settings.weekdayLocale === undefined) {
 			this.settings.weekdayLocale = null;
 		}
-		if (syncWeekdayDefaultsForLocale(this.settings)) {
+		const migratedWeekday = ensureFormatWeekdayFields(this.settings);
+		const syncedLocale = syncWeekdayDefaultsForLocale(this.settings);
+		if (migratedWeekday || syncedLocale) {
 			await this.saveSettings();
 		}
 	}

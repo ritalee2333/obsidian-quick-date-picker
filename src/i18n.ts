@@ -1,4 +1,4 @@
-import type { WeekdayFormat } from "./types";
+import type { FormatTemplate, WeekdayFormat } from "./types";
 
 export type Locale = "zh" | "en";
 
@@ -49,7 +49,7 @@ const dicts: Record<Locale, Record<string, TranslationValue>> = {
 		rememberLastFormat: "记住上次使用的格式",
 		rememberLastFormatDesc: "开启后弹窗优先选中上次使用的格式；关闭时使用默认格式",
 		includeWeekday: "输出星期",
-		includeWeekdayDesc: "开启后，在日期中附加星期信息",
+		includeWeekdayDesc: "开启后，可在下方各格式中分别选择星期样式",
 		weekdayFormat: "星期格式",
 		weekdayFormatDesc: "中文＝星期四；中文简写＝周四；英文＝Thursday；英文简写＝Thu",
 		weekdayChinese: "中文（星期四）",
@@ -61,6 +61,9 @@ const dicts: Record<Locale, Record<string, TranslationValue>> = {
 		weekdayArrangementPlaceholder: "日期 星期",
 		weekdayArrangementDefault: "日期 星期",
 		defaultFormat: "默认格式",
+		defaultFormatHelpTokens: "日期格式支持: YYYY, YY, MMMM, MMM, MM, M, DD, D",
+		defaultFormatHelpAffix: "前缀/后缀示例：Wiki Link 用前缀 [[、后缀 ]]，输出如 [[2026-09-24]]",
+		defaultFormatHelpWeekday: "开启「输出星期」后，可在各格式中设置星期样式与排列（占位符：日期/星期 或 {date}/{weekday}）",
 		favoriteFormats: "常用格式列表",
 		addFormat: "+ 添加常用格式",
 		setAsDefault: "设为默认",
@@ -96,7 +99,7 @@ const dicts: Record<Locale, Record<string, TranslationValue>> = {
 		rememberLastFormat: "Remember Last Format",
 		rememberLastFormatDesc: "When enabled, the popup prefers your last-used format; when off, it uses the Default Format",
 		includeWeekday: "Include weekday",
-		includeWeekdayDesc: "Append weekday text to the formatted date",
+		includeWeekdayDesc: "When enabled, each format below can choose its own weekday style",
 		weekdayFormat: "Weekday format",
 		weekdayFormatDesc: "Chinese＝星期四；Chinese short＝周四；English＝Thursday；English short＝Thu",
 		weekdayChinese: "Chinese (星期四)",
@@ -108,6 +111,9 @@ const dicts: Record<Locale, Record<string, TranslationValue>> = {
 		weekdayArrangementPlaceholder: "{date} {weekday}",
 		weekdayArrangementDefault: "{date} {weekday}",
 		defaultFormat: "Default Format",
+		defaultFormatHelpTokens: "Date tokens: YYYY, YY, MMMM, MMM, MM, M, DD, D",
+		defaultFormatHelpAffix: "Prefix/suffix example: Wiki Link uses [[ and ]] → [[2026-09-24]]",
+		defaultFormatHelpWeekday: "With Include weekday on, each format can set weekday style and arrangement ({date}/{weekday})",
 		favoriteFormats: "Favorite Formats",
 		addFormat: "+ Add Favorite Format",
 		setAsDefault: "Set as Default",
@@ -181,11 +187,73 @@ export function mapWeekdayFormatToLocale(
 
 const STOCK_ARRANGEMENTS = new Set(["日期 星期", "{date} {weekday}", ""]);
 
+/** Latin-looking date formats that often want English weekday even in a Chinese UI. */
+function prefersEnglishWeekdayWithDate(format: FormatTemplate): boolean {
+	const weekday = format.weekdayFormat;
+	if (weekday !== "english" && weekday !== "englishShort") return false;
+	return /MMM|MMMM/.test(format.dateFormat) || /年|月|日/.test(format.dateFormat) === false;
+}
+
+function mapFormatWeekday(
+	format: FormatTemplate | null | undefined,
+	locale: Locale,
+	prev: Locale | null
+): boolean {
+	if (!format?.weekdayFormat) return false;
+	if (prefersEnglishWeekdayWithDate(format)) return false;
+
+	const before = format.weekdayFormat;
+	if (prev == null) {
+		const zhDefaults = getLocaleWeekdayDefaults("zh");
+		const enDefaults = getLocaleWeekdayDefaults("en");
+		if (locale === "en") {
+			if (before === zhDefaults.weekdayFormat || before === "short") {
+				format.weekdayFormat = mapWeekdayFormatToLocale(before, "en");
+			}
+		} else if (before === enDefaults.weekdayFormat || before === "englishShort") {
+			format.weekdayFormat = mapWeekdayFormatToLocale(before, "zh");
+		}
+	} else {
+		format.weekdayFormat = mapWeekdayFormatToLocale(before, locale);
+	}
+	return format.weekdayFormat !== before;
+}
+
+function mapFormatArrangement(
+	format: FormatTemplate | null | undefined,
+	locale: Locale,
+	prev: Locale | null
+): boolean {
+	if (!format) return false;
+	const before = (format.weekdayArrangement ?? "").trim();
+	if (!STOCK_ARRANGEMENTS.has(before) && before !== "") return false;
+
+	const defaults = getLocaleWeekdayDefaults(locale);
+	const zhDefaults = getLocaleWeekdayDefaults("zh");
+	const enDefaults = getLocaleWeekdayDefaults("en");
+
+	if (prev == null) {
+		if (locale === "en") {
+			if (before === zhDefaults.weekdayArrangement || before === "") {
+				format.weekdayArrangement = enDefaults.weekdayArrangement;
+			}
+		} else if (before === enDefaults.weekdayArrangement || before === "") {
+			format.weekdayArrangement = zhDefaults.weekdayArrangement;
+		}
+	} else {
+		format.weekdayArrangement = defaults.weekdayArrangement;
+	}
+	return (format.weekdayArrangement ?? "") !== before;
+}
+
 /** Align weekday defaults when Obsidian UI language changes. */
 export function syncWeekdayDefaultsForLocale(settings: {
 	weekdayFormat: WeekdayFormat;
 	weekdayArrangement: string;
 	weekdayLocale: Locale | null;
+	defaultFormat?: FormatTemplate;
+	favoriteFormats?: FormatTemplate[];
+	lastUsedFormat?: FormatTemplate | null;
 }): boolean {
 	const locale = getLocale();
 	if (settings.weekdayLocale === locale) return false;
@@ -224,6 +292,15 @@ export function syncWeekdayDefaultsForLocale(settings: {
 			settings.weekdayArrangement = defaults.weekdayArrangement;
 		}
 	}
+
+	mapFormatWeekday(settings.defaultFormat, locale, prev);
+	mapFormatArrangement(settings.defaultFormat, locale, prev);
+	for (const format of settings.favoriteFormats ?? []) {
+		mapFormatWeekday(format, locale, prev);
+		mapFormatArrangement(format, locale, prev);
+	}
+	mapFormatWeekday(settings.lastUsedFormat, locale, prev);
+	mapFormatArrangement(settings.lastUsedFormat, locale, prev);
 
 	settings.weekdayLocale = locale;
 	return true;

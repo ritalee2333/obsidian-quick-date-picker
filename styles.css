@@ -258,55 +258,75 @@
 	color: var(--text-muted);
 }
 
-/* Settings Panel — block hosts keep framework rows but stack nested Settings */
-.setting-item.atd-setting-block-host {
-	display: flex !important;
-	flex-direction: column !important;
-	align-items: stretch !important;
-	justify-content: flex-start !important;
-	flex-wrap: nowrap !important;
+/*
+ * Settings Panel — block hosts keep framework rows but stack nested Settings.
+ * Higher specificity (no declaration-no-important) so marketplace stylelint stays clean.
+ */
+.vertical-tab-content .setting-item.atd-setting-block-host {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	flex-wrap: nowrap;
 	gap: 0;
-	height: auto !important;
+	height: auto;
 	width: 100%;
 	box-sizing: border-box;
-	padding: 0 !important;
-	border: none !important;
-	background: transparent !important;
+	padding: 0;
+	border: none;
+	background: transparent;
 }
 
-.atd-format-editor-host,
-.atd-format-list-host {
+.vertical-tab-content .atd-format-editor-host,
+.vertical-tab-content .atd-format-list-host {
 	width: 100%;
 	margin: 0 0 8px;
 	box-sizing: border-box;
 }
 
+.vertical-tab-content .atd-format-section-help {
+	padding: 4px 12px 8px;
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.vertical-tab-content .atd-format-section-help-line {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	line-height: 1.45;
+	margin: 0 0 4px;
+}
+
+.vertical-tab-content .atd-format-section-help-line:last-child {
+	margin-bottom: 0;
+}
+
 /*
  * Default-format body uses the same horizontal inset as .atd-format-item
  * so "预览" lines up with favorite-format previews.
- * (Cannot put padding on .atd-format-editor-host — block-host forces padding:0 !important.)
+ * (Padding lives here because the block-host itself uses padding: 0.)
  */
-.atd-format-editor-body {
+.vertical-tab-content .atd-format-editor-body {
 	padding: 8px 12px;
 	box-sizing: border-box;
 	width: 100%;
 }
 
-.atd-format-editor-host > .setting-item,
-.atd-format-item > .setting-item {
+.vertical-tab-content .atd-format-editor-host > .setting-item,
+.vertical-tab-content .atd-format-item > .setting-item {
 	width: 100%;
 	box-sizing: border-box;
 }
 
 /* name|dateFormat and prefix|suffix — shared borders for both columns */
-.atd-format-fields {
+.vertical-tab-content .atd-format-fields {
 	position: relative;
 	width: 100%;
 	box-sizing: border-box;
 }
 
 /* One continuous vertical divider through both rows */
-.atd-format-fields::before {
+.vertical-tab-content .atd-format-fields::before {
 	content: "";
 	position: absolute;
 	top: 0;
@@ -318,7 +338,7 @@
 	z-index: 1;
 }
 
-.atd-format-fields-row {
+.vertical-tab-content .atd-format-fields-row {
 	display: flex;
 	gap: 0;
 	width: 100%;
@@ -327,53 +347,120 @@
 	border-top: 1px solid var(--background-modifier-border);
 }
 
-.atd-format-fields-row > .setting-item {
+.vertical-tab-content .atd-format-fields-row > .setting-item {
+	display: flex;
+	align-items: center;
 	flex: 1 1 0;
 	min-width: 0;
 	width: auto;
 	box-sizing: border-box;
-	border: none !important;
-	border-top: none !important;
-	box-shadow: none !important;
-	padding-top: 0.75em;
-	padding-bottom: 0.75em;
+	border: none;
+	border-top: none;
+	box-shadow: none;
+	padding-top: 0.65em;
+	padding-bottom: 0.65em;
 	padding-left: 0;
 	padding-right: 12px;
-	background: transparent !important;
+	background: transparent;
 }
 
-.atd-format-fields-row > .setting-item:last-child {
+.vertical-tab-content .atd-format-fields-row > .setting-item:last-child {
 	padding-left: 12px;
 	padding-right: 0;
 }
 
-.atd-format-fields-row .setting-item-control {
-	flex-shrink: 0;
+.vertical-tab-content .atd-format-fields-row > .setting-item .setting-item-info {
+	margin: 0;
+	display: flex;
+	align-items: center;
+	min-height: var(--input-height);
 }
 
-.atd-format-fields-row .setting-item-control input[type="text"] {
+.vertical-tab-content .atd-format-fields-row > .setting-item .setting-item-name {
+	margin: 0;
+	padding: 0;
+	line-height: var(--line-height-normal);
+}
+
+.vertical-tab-content .atd-format-fields-row > .setting-item .setting-item-description {
+	display: none;
+}
+
+.vertical-tab-content .atd-format-fields-row .setting-item-control {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+}
+
+.vertical-tab-content .atd-format-fields-row .setting-item-control input[type="text"] {
 	width: 100%;
 	min-width: 0;
 	max-width: 160px;
 }
 
+.vertical-tab-content .atd-format-weekday {
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.vertical-tab-content .atd-format-weekday > .setting-item {
+	display: flex;
+	align-items: center;
+	border: none;
+	border-top: 1px solid var(--background-modifier-border);
+	box-shadow: none;
+	padding-top: 0.65em;
+	padding-bottom: 0.65em;
+	padding-left: 0;
+	padding-right: 0;
+	background: transparent;
+	min-height: unset;
+}
+
+.vertical-tab-content .atd-format-weekday > .setting-item .setting-item-info {
+	margin: 0;
+	display: flex;
+	align-items: center;
+	min-height: var(--input-height);
+}
+
+.vertical-tab-content .atd-format-weekday > .setting-item .setting-item-name {
+	margin: 0;
+	padding: 0;
+	line-height: var(--line-height-normal);
+}
+
+.vertical-tab-content .atd-format-weekday > .setting-item .setting-item-description {
+	display: none;
+}
+
+.vertical-tab-content .atd-format-weekday > .setting-item .setting-item-control {
+	display: flex;
+	align-items: center;
+}
+
+.vertical-tab-content .atd-format-weekday > .setting-item .setting-item-control input[type="text"] {
+	min-width: 0;
+	max-width: 220px;
+}
+
 @media (max-width: 720px) {
-	.atd-format-fields::before {
+	.vertical-tab-content .atd-format-fields::before {
 		display: none;
 	}
 
-	.atd-format-fields-row {
+	.vertical-tab-content .atd-format-fields-row {
 		flex-direction: column;
 	}
 
-	.atd-format-fields-row > .setting-item,
-	.atd-format-fields-row > .setting-item:last-child {
+	.vertical-tab-content .atd-format-fields-row > .setting-item,
+	.vertical-tab-content .atd-format-fields-row > .setting-item:last-child {
 		padding-left: 0;
 		padding-right: 0;
 	}
 
-	.atd-format-fields-row > .setting-item + .setting-item {
-		border-top: 1px solid var(--background-modifier-border) !important;
+	.vertical-tab-content .atd-format-fields-row > .setting-item + .setting-item {
+		border-top: 1px solid var(--background-modifier-border);
 	}
 }
 

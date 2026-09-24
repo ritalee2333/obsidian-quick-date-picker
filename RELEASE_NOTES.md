@@ -1,21 +1,19 @@
-## What's New in 1.2.5
+## What's New in 1.2.6
 
 ### Improved
-- Settings: favorite format fields use a clearer two-column layout (name | date format, prefix | suffix)
-- Settings: each favorite format can be set as the default via **Set as Default** (does not conflict with **Remember Last Format**)
-- Settings: remove the duplicate “Add favorite format” label and the “Reset to defaults” button
-
-### Fixed
-- Default format preview aligns with favorite format previews
+- Weekday style and date/weekday arrangement are configured **per format** (appears when Include weekday is on)
+- English-oriented formats (e.g. US Date) can use English weekday independently of Chinese formats
+- Settings help for date tokens, prefix/suffix (Wiki Link example), and weekday arrangement sits under Default Format
+- Compact, vertically aligned format field rows (no oversized weekday controls)
+- Drop `!important` from settings CSS for marketplace stylelint compliance
 
 ---
 
-## 1.2.5 更新内容
+## 1.2.6 更新内容
 
 ### 优化
-- 设置页：常用格式字段改为更清晰的两列布局（名称 | 日期格式，前缀 | 后缀）
-- 设置页：每条常用格式可「设为默认」（与「记住上次使用的格式」互不冲突）
-- 设置页：去掉重复的「添加常用格式」文案，以及「重置为默认」按钮
-
-### 修复
-- 默认格式预览与常用格式预览对齐
+- 「星期格式」与「日期与星期排列」改为**按格式单独配置**（开启「输出星期」后显示）
+- 英文风格日期（如 US Date）可独立使用英文星期，不必与中文格式共用
+- 日期 token、前缀/后缀（Wiki Link 示例）、星期排列说明移到「默认格式」标题下方
+- 格式字段行高更紧凑，标签与输入框垂直居中
+- 去掉设置页 CSS 中的 `!important`，满足应用市场 stylelint 要求

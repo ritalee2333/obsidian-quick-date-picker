@@ -130,18 +130,59 @@ describe("AtDateSettingTab", () => {
 			expect(names).toContain(t("includeWeekday"));
 		});
 
-		it("hides weekday controls when includeWeekday is off", () => {
-			const settings = makeSettings({ includeWeekday: false });
+		it("hides global weekday format and arrangement settings (now per-format)", () => {
+			const settings = makeSettings({ includeWeekday: true });
 			const plugin = makeMockPlugin(settings);
 			const tab = new AtDateSettingTab({} as never, plugin);
-			const weekdayFormat = tab.getSettingDefinitions().find(
-				(d) => "name" in d && d.name === t("weekdayFormat")
-			) as { visible?: () => boolean } | undefined;
-			expect(weekdayFormat?.visible?.()).toBe(false);
+			const defs = tab.getSettingDefinitions();
+			expect(
+				defs.find((d) => "name" in d && d.name === t("weekdayFormat"))
+			).toBeUndefined();
+			expect(
+				defs.find((d) => "name" in d && d.name === t("weekdayArrangement"))
+			).toBeUndefined();
 		});
 	});
 
 	describe("mounted format UI", () => {
+		it("shows per-format weekday controls when includeWeekday is on", () => {
+			const settings = makeSettings({
+				includeWeekday: true,
+				favoriteFormats: [
+					{
+						name: "US Date",
+						dateFormat: "MMM D, YYYY",
+						prefix: "",
+						suffix: "",
+						weekdayFormat: "englishShort",
+						weekdayArrangement: "{date} {weekday}",
+					},
+				],
+			});
+			const plugin = makeMockPlugin(settings);
+			const tab = new AtDateSettingTab({} as never, plugin);
+			mountSettingsUi(tab);
+
+			const weekdayBlocks = tab.containerEl.querySelectorAll(".atd-format-weekday");
+			expect(weekdayBlocks.length).toBeGreaterThanOrEqual(2); // default + favorite
+			for (const block of Array.from(weekdayBlocks)) {
+				expect(block.querySelectorAll(".setting-item").length).toBe(2);
+			}
+			expect(tab.containerEl.querySelector(".atd-format-section-help")).not.toBeNull();
+			expect(tab.containerEl.textContent).toContain(t("defaultFormatHelpTokens"));
+			expect(tab.containerEl.textContent).toContain(t("defaultFormatHelpAffix"));
+			expect(tab.containerEl.textContent).toContain(t("defaultFormatHelpWeekday"));
+		});
+
+		it("hides per-format weekday controls when includeWeekday is off", () => {
+			const settings = makeSettings({ includeWeekday: false });
+			const plugin = makeMockPlugin(settings);
+			const tab = new AtDateSettingTab({} as never, plugin);
+			mountSettingsUi(tab);
+
+			expect(tab.containerEl.querySelectorAll(".atd-format-weekday").length).toBe(0);
+		});
+
 		it("renders favorite format items", () => {
 			const settings = makeSettings({
 				favoriteFormats: [
@@ -252,6 +293,8 @@ describe("AtDateSettingTab", () => {
 				dateFormat: "MMM D, YYYY",
 				prefix: "",
 				suffix: "",
+				weekdayFormat: "englishShort" as const,
+				weekdayArrangement: "{date} {weekday}",
 			};
 			const lastUsed = {
 				name: "Wiki",
@@ -265,6 +308,8 @@ describe("AtDateSettingTab", () => {
 					dateFormat: "YYYY-MM-DD",
 					prefix: "",
 					suffix: "",
+					weekdayFormat: "chinese",
+					weekdayArrangement: "日期 星期",
 				},
 				favoriteFormats: [favorite],
 				rememberLastFormat: true,
@@ -281,10 +326,13 @@ describe("AtDateSettingTab", () => {
 			expect(setDefaultBtn!.textContent).toBe(t("setAsDefault"));
 			setDefaultBtn!.dispatchEvent(new Event("click"));
 
-			expect(plugin.settings.defaultFormat).toEqual(favorite);
-			expect(plugin.settings.defaultFormat).not.toBe(favorite);
+			expect(plugin.settings.defaultFormat).toEqual(plugin.settings.favoriteFormats[0]);
+			expect(plugin.settings.defaultFormat).not.toBe(plugin.settings.favoriteFormats[0]);
+			expect(plugin.settings.defaultFormat.name).toBe("US Date");
+			expect(plugin.settings.defaultFormat.weekdayFormat).toBe("englishShort");
 			expect(plugin.settings.rememberLastFormat).toBe(true);
-			expect(plugin.settings.lastUsedFormat).toEqual(lastUsed);
+			expect(plugin.settings.lastUsedFormat?.name).toBe("Wiki");
+			expect(plugin.settings.lastUsedFormat?.prefix).toBe("[[");
 		});
 
 		it("marks the matching favorite as 已是默认", () => {
